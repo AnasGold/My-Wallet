@@ -5,421 +5,1955 @@
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Wallet - حساباتی ڕۆژانە</title>
+
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 480px; background: #1e293b; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; height: fit-content; }
-        
-        #loading-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #0f172a; display: flex; flex-direction: column; justify-content: center;
-            align-items: center; z-index: 9999; color: #38bdf8; font-weight: bold; font-size: 18px; gap: 10px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Tahoma, sans-serif;
         }
 
-        .app-header { text-align: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #334155; }
-        .logo-container { display: inline-flex; align-items: center; gap: 8px; background: #0f172a; padding: 8px 16px; border-radius: 50px; border: 1px solid #475569; }
-        .logo-emoji { font-size: 20px; }
-        .logo-container h1 { font-size: 18px; color: #38bdf8; font-weight: bold; }
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
 
-        .form-group { margin-bottom: 15px; position: relative; }
-        label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
-        input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; }
-        input:focus { outline: none; border-color: #38bdf8; }
-        
-        .btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; margin-top: 5px; }
-        .btn:hover { background: #059669; }
-        .btn-secondary { background: #334155; margin-top: 10px; }
-        .btn-secondary:hover { background: #475569; }
-        .btn-danger { background: #ef4444; padding: 6px 10px; font-size: 12px; border-radius: 6px; border: none; color: white; cursor: pointer; }
-        .btn-restore { background: #3b82f6; padding: 5px 8px; font-size: 11px; border-radius: 6px; border: none; color: white; cursor: pointer; }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            position: relative;
+            height: fit-content;
+        }
 
-        .auth-box, .app-box { display: none; }
-        .auth-box.active, .app-box.active { display: block; }
-        
-        .link-text { text-align: center; margin-top: 15px; font-size: 13px; color: #38bdf8; cursor: pointer; }
-        .link-text:hover { text-decoration: underline; }
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: #38bdf8;
+            font-weight: bold;
+            font-size: 18px;
+        }
 
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
-        .user-name-display { font-size: 15px; color: #fbbf24; font-weight: bold; }
-        .menu-icon { font-size: 20px; cursor: pointer; color: #fbbf24; background: #0f172a; padding: 6px 12px; border-radius: 8px; border: 1px solid #334155; }
-        
-        .dropdown-menu { display: none; position: absolute; top: 100px; right: 20px; background: #0f172a; border: 1px solid #475569; border-radius: 12px; width: 260px; z-index: 20; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .dropdown-menu.active { display: block; }
-        .dropdown-item { padding: 12px 15px; font-size: 14px; color: #f8fafc; cursor: pointer; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 10px; }
-        .dropdown-item:hover { background: #1e293b; color: #38bdf8; }
+        .app-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #334155;
+        }
 
-        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
-        .custom-modal.active { display: flex; }
-        .modal-content { background: #1e293b; border: 1px solid #475569; width: 90%; max-width: 380px; padding: 20px; border-radius: 14px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
-        .modal-header { font-size: 16px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; text-align: center; }
-        .modal-sub { font-size: 12px; color: #94a3b8; text-align: center; margin-bottom: 15px; }
-        .modal-body { max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
-        .trash-row { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #ef4444; font-size: 13px; color: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
-        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
-        .modal-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .modal-btn-confirm { background: #10b981; color: white; }
-        .modal-btn-cancel { background: #334155; color: white; }
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #0f172a;
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid #475569;
+        }
 
-        .custom-select-container { position: relative; }
-        .custom-select-header { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .custom-dropdown-list { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0f172a; border: 1px solid #475569; border-radius: 8px; margin-top: 5px; z-index: 10; max-height: 180px; overflow-y: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
-        .custom-dropdown-list.active { display: block; }
-        .custom-option { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; cursor: pointer; font-size: 14px; }
-        .custom-option:hover { background: #1e293b; }
-        .option-delete { color: #ef4444; font-weight: bold; padding: 2px 8px; font-size: 16px; }
+        .logo-emoji {
+            font-size: 20px;
+        }
 
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; background: #334155; border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; }
-        .tab-btn.active { background: #38bdf8; color: #0f172a; }
-        .section { display: none; }
-        .section.active { display: block; }
+        .logo-container h1 {
+            font-size: 18px;
+            color: #38bdf8;
+        }
 
-        .select-row { display: flex; gap: 8px; align-items: center; }
-        .add-category-btn { background: #10b981; color: white; border: none; width: 45px; height: 45px; border-radius: 8px; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .form-group {
+            margin-bottom: 15px;
+        }
 
-        .card { background: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 4px solid #38bdf8; }
-        .card h3 { font-size: 14px; color: #94a3b8; margin-bottom: 5px; }
-        .card p { font-size: 20px; font-weight: bold; color: #38bdf8; }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
 
-        .history-list { list-style: none; margin-top: 15px; max-height: 200px; overflow-y: auto; }
-        .history-item { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
-        .item-info h4 { font-size: 15px; color: #f8fafc; margin-bottom: 3px; }
-        .item-info span { font-size: 11px; color: #64748b; }
-        .item-left { display: flex; align-items: center; gap: 10px; }
-        .item-price { font-weight: bold; color: #ef4444; }
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        .btn-secondary {
+            background: #334155;
+            margin-top: 10px;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn-restore {
+            background: #3b82f6;
+            padding: 5px 8px;
+            font-size: 11px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .auth-box, .app-box {
+            display: none;
+        }
+
+        .auth-box.active, .app-box.active {
+            display: block;
+        }
+
+        .link-text {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #38bdf8;
+            cursor: pointer;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+
+        .user-name-display {
+            font-size: 15px;
+            color: #fbbf24;
+            font-weight: bold;
+        }
+
+        .menu-icon {
+            font-size: 20px;
+            cursor: pointer;
+            color: #fbbf24;
+            background: #0f172a;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 12px;
+            width: 260px;
+            z-index: 20;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 15px;
+            font-size: 14px;
+            color: #f8fafc;
+            cursor: pointer;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid #475569;
+            width: 90%;
+            max-width: 380px;
+            padding: 20px;
+            border-radius: 14px;
+        }
+
+        .modal-header {
+            font-size: 16px;
+            font-weight: bold;
+            color: #38bdf8;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .modal-sub {
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-body {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-btn-confirm {
+            background: #10b981;
+            color: white;
+        }
+
+        .modal-btn-cancel {
+            background: #334155;
+            color: white;
+        }
+
+        .custom-select-container {
+            position: relative;
+        }
+
+        .custom-select-header {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .custom-dropdown-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            margin-top: 5px;
+            z-index: 10;
+        }
+
+        .custom-dropdown-list.active {
+            display: block;
+        }
+
+        .custom-option {
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #1e293b;
+            cursor: pointer;
+        }
+
+        .option-delete {
+            color: #ef4444;
+            font-weight: bold;
+            padding: 2px 8px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: #334155;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .tab-btn.active {
+            background: #38bdf8;
+            color: #0f172a;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .select-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .add-category-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .card {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-right: 4px solid #38bdf8;
+        }
+
+        .card h3 {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+
+        .card p {
+            font-size: 20px;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .history-list {
+            list-style: none;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #334155;
+        }
+
+        .item-info h4 {
+            font-size: 15px;
+            color: #f8fafc;
+            margin-bottom: 3px;
+        }
+
+        .item-info span {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #ef4444;
+        }
+
+        .trash-row {
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #ef4444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
-<body class="notranslate" translate="no">
 
-    <div id="loading-screen">
-        <div>⏳ خەریکی بارکردنی داتاکانین...</div>
-    </div>
+<body>
 
-    <div class="container">
-        <div class="app-header">
-            <div class="logo-container">
-                <span class="logo-emoji">💼</span>
-                <h1>my wallet</h1>
-            </div>
-        </div>
+<div id="loading-screen">
+    ⏳ خەریکی بارکردنی داتاکانین...
+</div>
 
-        <div id="login-box" class="auth-box active">
-            <h2 style="text-align: center; margin-bottom: 15px; font-size: 18px; color: #94a3b8;">چوونە ژوورەوە</h2>
-            <div class="form-group"><label>ئیمەیڵ</label><input type="email" id="login-email"></div>
-            <div class="form-group"><label>پاسۆرد</label><input type="password" id="login-password"></div>
-            <button class="btn" onclick="loginUser()">چوونە ژوورەوە</button>
-            <button class="btn btn-secondary" onclick="showBox('register-box')">ئەکاونتت نییە؟ دروستی بکە</button>
-            <p class="link-text" onclick="showForgotBox()">پاسۆردەکەت بیرچووەتەوە؟</p>
-        </div>
+<div class="container">
 
-        <div id="forgot-box" class="auth-box">
-            <h2 style="text-align: center; margin-bottom: 15px; font-size: 18px; color: #94a3b8;">گۆڕینەوەی پاسۆرد</h2>
-            <div class="form-group"><label>ئیمەیڵ</label><input type="email" id="forgot-email"></div>
-            <button class="btn" onclick="sendResetEmail()">ناردنی ڤێریفای بۆ ئیمەیڵ</button>
-            <button class="btn btn-secondary" onclick="showBox('login-box')">گەڕانەوە</button>
-        </div>
-
-        <div id="register-box" class="auth-box">
-            <h2 style="text-align: center; margin-bottom: 15px; font-size: 18px; color: #94a3b8;">دروستکردنی ئەکاونت</h2>
-            <div class="form-group"><label>ئیمەیڵ</label><input type="email" id="reg-email"></div>
-            <div class="form-group"><label>پاسۆرد</label><input type="password" id="reg-password"></div>
-            <div class="form-group"><label>دووبارەکردنەوەی پاسۆرد</label><input type="password" id="reg-password-confirm"></div>
-            <button class="btn" onclick="registerUser()">دروستکردنی ئەکاونت</button>
-            <button class="btn btn-secondary" onclick="showBox('login-box')">گەڕانەوە</button>
-        </div>
-
-        <div id="app-box" class="app-box">
-            <div class="top-bar">
-                <span id="user-name-display" class="user-name-display"></span>
-                <div class="menu-icon" onclick="toggleMenu()">☰</div>
-            </div>
-
-            <div id="dropdown-menu" class="dropdown-menu">
-                <div class="dropdown-item" id="user-email-display" style="color: #38bdf8; font-size: 12px; border-bottom: 1px dashed #334155;">📧 </div>
-                <div class="dropdown-item" onclick="openCustomModal('name')">👤 گۆڕینی ناوی هەژمار</div>
-                <div class="dropdown-item" onclick="openTrashModal()">🕒 مامەڵە سڕاوەکان</div>
-                <div class="dropdown-item" style="color: #fbbf24;" onclick="logoutUser()">🚪 چوونە دەرەوە</div>
-            </div>
-
-            <div id="generic-modal" class="custom-modal">
-                <div class="modal-content">
-                    <div id="modal-title" class="modal-header">تێبینی</div>
-                    <div id="modal-subtitle" class="modal-sub"></div>
-                    <div id="modal-body-content" class="modal-body"></div>
-                    <div class="modal-buttons">
-                        <button id="modal-cancel-btn" class="modal-btn modal-btn-cancel" onclick="closeCustomModal()">پەشیمانبوونەوە</button>
-                        <button id="modal-ok-btn" class="modal-btn modal-btn-confirm">تۆمارکردن</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="trash-modal" class="custom-modal">
-                <div class="modal-content" style="max-width: 400px;">
-                    <div class="modal-header">مامەڵە سڕاوەکان</div>
-                    <div id="trash-body" class="modal-body" style="direction: ltr; text-align: left;"></div>
-                    <button class="modal-btn modal-btn-cancel" style="width: 100%; margin-top: 10px;" onclick="closeTrashModal()">داخستن</button>
-                </div>
-            </div>
-
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('expenses', event)">بەشی خەرجی</button>
-                <button class="tab-btn" onclick="switchTab('income', event)">پارەی هەبوو</button>
-            </div>
-
-            <div id="expenses-section" class="section active">
-                <div class="form-group">
-                    <label>جۆری خەرجی</label>
-                    <div class="select-row">
-                        <div class="custom-select-container" style="flex: 1;">
-                            <div class="custom-select-header" onclick="toggleCustomDropdown()" id="selected-category-text">
-                                خواردن و خواردنەوە <span>▼</span>
-                            </div>
-                            <div class="custom-dropdown-list" id="custom-dropdown-list"></div>
-                        </div>
-                        <button type="button" class="add-category-btn" onclick="openCategoryModal()">+</button>
-                    </div>
-                </div>
-
-                <div class="form-group"><label>شتی کڕدراو (تایتڵ)</label><input type="text" id="expense-title"></div>
-                <div class="form-group"><label>بڕی پارە</label><input type="number" id="expense-amount"></div>
-
-                <button class="btn" onclick="addExpense()">تۆمارکردنی خەرجی</button>
-
-                <div class="card" style="margin-top: 15px; border-color: #ef4444;">
-                    <h3>کۆی پارەی خەرجکراو</h3>
-                    <p id="total-expense" style="color: #ef4444;">0</p>
-                </div>
-
-                <ul class="history-list" id="expense-list"></ul>
-            </div>
-
-            <div id="income-section" class="section">
-                <div class="card">
-                    <h3>پارەی بەردەست</h3>
-                    <p id="display-budget">0</p>
-                </div>
-                <div class="form-group"><label>دەستکاری پارە</label><input type="number" id="monthly-budget-input"></div>
-                <button class="btn" onclick="saveBudget()">نوێکردنەوەی پارە</button>
-            </div>
+    <div class="app-header">
+        <div class="logo-container">
+            <span class="logo-emoji">💼</span>
+            <h1>My Wallet</h1>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <!-- LOGIN -->
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDZNuDC7hPOI6RNCfjcP-nfMN12knaSX0M",
-            authDomain: "my-wallet-49a52.firebaseapp.com",
-            projectId: "my-wallet-49a52",
-            storageBucket: "my-wallet-49a52.firebasestorage.app",
-            messagingSenderId: "765205856247",
-            appId: "1:765205856247:web:4dee2b3f97abb3475bb8f2"
-        };
+    <div id="login-box" class="auth-box active">
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        <h2 style="text-align:center;margin-bottom:15px;">چوونە ژوورەوە</h2>
 
-        let currentUserUid = null;
-        window.categories = ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
-        window.selectedCategory = "خواردن و خواردنەوە";
-        window.monthlyBudgetVal = 0;
-        window.expensesArray = [];
-        window.trashArray = [];
+        <div class="form-group">
+            <label>ئیمەیڵ</label>
+            <input type="email" id="login-email">
+        </div>
 
-        window.showBox = function(boxId) {
-            document.querySelectorAll('.auth-box').forEach(b => b.classList.remove('active'));
-            document.getElementById(boxId).classList.add('active');
-        }
-        window.showForgotBox = function() { showBox('forgot-box'); }
+        <div class="form-group">
+            <label>پاسۆرد</label>
+            <input type="password" id="login-password">
+        </div>
 
-        window.registerUser = function() {
-            let email = document.getElementById('reg-email').value;
-            let pass = document.getElementById('reg-password').value;
-            createUserWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
-        }
+        <button class="btn" onclick="loginUser()">چوونە ژوورەوە</button>
 
-        window.loginUser = function() {
-            let email = document.getElementById('login-email').value;
-            let pass = document.getElementById('login-password').value;
-            signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
-        }
+        <button class="btn btn-secondary" onclick="showBox('register-box')">
+            ئەکاونتت نییە؟ دروستی بکە
+        </button>
 
-        window.logoutUser = function() { signOut(auth); }
-        window.sendResetEmail = function() {
-            let email = document.getElementById('forgot-email').value;
-            if(email) sendPasswordResetEmail(auth, email).then(() => alert("نێردرا"));
-        }
+        <p class="link-text" onclick="showBox('forgot-box')">
+            پاسۆردەکەت بیرچووەتەوە؟
+        </p>
 
-        window.toggleMenu = function() { document.getElementById('dropdown-menu').classList.toggle('active'); }
-        window.closeCustomModal = function() { document.getElementById('generic-modal').classList.remove('active'); }
-        window.openTrashModal = function() { toggleMenu(); document.getElementById('trash-modal').classList.add('active'); }
-        window.closeTrashModal = function() { document.getElementById('trash-modal').classList.remove('active'); }
+    </div>
 
-        // پاشەکەوتکردن بە بێوەستانی شاشە بۆ ئەوەی کێشەی نەهێشتنی مامەڵە دروست نەبێت
-        window.saveUserDataToCloud = function() {
-            if (!currentUserUid) return;
-            setDoc(doc(db, "users", currentUserUid), {
-                categories: window.categories,
-                selectedCategory: window.selectedCategory,
-                monthlyBudgetVal: window.monthlyBudgetVal,
-                expensesArray: window.expensesArray,
-                trashArray: window.trashArray
-            }, { merge: true }).catch(err => console.log(err));
-        }
 
-        async function loadUserData(uid) {
-            try {
-                let docSnap = await getDoc(doc(db, "users", uid));
-                if (docSnap.exists()) {
-                    let data = docSnap.data();
-                    window.categories = data.categories || window.categories;
-                    window.selectedCategory = data.selectedCategory || window.categories[0];
-                    window.monthlyBudgetVal = data.monthlyBudgetVal || 0;
-                    window.expensesArray = data.expensesArray || [];
-                    window.trashArray = data.trashArray || [];
-                }
-            } catch(e) { console.log(e); }
-            if(typeof window.initCategories === 'function') window.initCategories();
-            if(typeof window.renderAll === 'function') window.renderAll();
-        }
+    <!-- REGISTER -->
 
-        onAuthStateChanged(auth, async (user) => {
-            const loadingScreen = document.getElementById('loading-screen');
-            if (user) {
-                currentUserUid = user.uid;
-                document.getElementById('login-box').classList.remove('active');
-                document.getElementById('register-box').classList.remove('active');
-                document.getElementById('forgot-box').classList.remove('active');
-                document.getElementById('app-box').classList.add('active');
-                document.getElementById('user-name-display').innerText = user.displayName || "بەکارهێنەر";
-                document.getElementById('user-email-display').innerText = "📧 " + user.email;
-                
-                await loadUserData(user.uid);
-                loadingScreen.style.display = 'none';
-            } else {
-                currentUserUid = null;
-                window.expensesArray = [];
-                document.getElementById('app-box').classList.remove('active');
-                document.getElementById('login-box').classList.add('active');
-                loadingScreen.style.display = 'none';
-            }
-        });
-    </script>
+    <div id="register-box" class="auth-box">
 
-    <script>
-        window.initCategories = function() {
-            let list = document.getElementById('custom-dropdown-list');
-            let headerText = document.getElementById('selected-category-text');
-            if(!list) return;
-            list.innerHTML = '';
-            headerText.innerHTML = `${window.selectedCategory} <span>▼</span>`;
+        <h2 style="text-align:center;margin-bottom:15px;">
+            دروستکردنی ئەکاونت
+        </h2>
 
-            window.categories.forEach(cat => {
-                let option = document.createElement('div');
-                option.className = 'custom-option';
-                option.innerHTML = `<span>${cat}</span>`;
-                option.onclick = () => {
-                    window.selectedCategory = cat;
-                    headerText.innerHTML = `${cat} <span>▼</span>`;
-                    list.classList.remove('active');
-                    if(typeof window.saveUserDataToCloud === 'function') window.saveUserDataToCloud();
-                };
-                list.appendChild(option);
-            });
-        }
+        <div class="form-group">
+            <label>ئیمەیڵ</label>
+            <input type="email" id="reg-email">
+        </div>
 
-        window.toggleCustomDropdown = function() {
-            document.getElementById('custom-dropdown-list').classList.toggle('active');
-        }
+        <div class="form-group">
+            <label>پاسۆرد</label>
+            <input type="password" id="reg-password">
+        </div>
 
-        window.switchTab = function(tabName, event) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tabName + '-section').classList.add('active');
-        }
+        <div class="form-group">
+            <label>دووبارەکردنەوەی پاسۆرد</label>
+            <input type="password" id="reg-password-confirm">
+        </div>
 
-        window.addExpense = function() {
-            let title = document.getElementById('expense-title').value.trim();
-            let amount = parseFloat(document.getElementById('expense-amount').value);
+        <button class="btn" onclick="registerUser()">
+            دروستکردنی ئەکاونت
+        </button>
 
-            if (title && !isNaN(amount) && amount > 0) {
-                let now = new Date();
-                let fullDateTime = `${now.toLocaleDateString()} - ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        <button class="btn btn-secondary" onclick="showBox('login-box')">
+            گەڕانەوە
+        </button>
 
-                window.expensesArray.push({
-                    id: Date.now(),
-                    category: window.selectedCategory,
-                    title: title,
-                    amount: amount,
-                    dateTime: fullDateTime
-                });
+    </div>
 
-                if(typeof window.saveUserDataToCloud === 'function') {
-                    window.saveUserDataToCloud();
-                }
-                if(typeof window.renderAll === 'function') {
-                    window.renderAll();
-                }
 
-                document.getElementById('expense-title').value = '';
-                document.getElementById('expense-amount').value = '';
-            } else {
-                alert('تکایە خانەکان بە دروستی پڕبکەرەوە!');
-            }
-        }
+    <!-- FORGOT PASSWORD -->
 
-        window.deleteExpense = function(id) {
-            let index = window.expensesArray.findIndex(item => item.id === id);
-            if (index !== -1) {
-                let item = window.expensesArray.splice(index, 1)[0];
-                item.deletedAt = Date.now();
-                window.trashArray.push(item);
+    <div id="forgot-box" class="auth-box">
 
-                if(typeof window.saveUserDataToCloud === 'function') window.saveUserDataToCloud();
-                if(typeof window.renderAll === 'function') window.renderAll();
-            }
-        }
+        <h2 style="text-align:center;margin-bottom:15px;">
+            گۆڕینەوەی پاسۆرد
+        </h2>
 
-        window.saveBudget = function() {
-            let val = parseFloat(document.getElementById('monthly-budget-input').value);
-            if (!isNaN(val)) {
-                window.monthlyBudgetVal = val;
-                if(typeof window.saveUserDataToCloud === 'function') window.saveUserDataToCloud();
-                if(typeof window.renderAll === 'function') window.renderAll();
-                alert('پارەی مانگانە نوێکرایەوە!');
-            }
-        }
+        <div class="form-group">
+            <label>ئیمەیڵ</label>
+            <input type="email" id="forgot-email">
+        </div>
 
-        window.renderAll = function() {
-            let total = window.expensesArray.reduce((sum, item) => sum + item.amount, 0);
-            let totalEl = document.getElementById('total-expense');
-            if(totalEl) totalEl.innerText = total;
+        <button class="btn" onclick="sendResetEmail()">
+            ناردنی لینک
+        </button>
 
-            let budgetEl = document.getElementById('display-budget');
-            if(budgetEl) budgetEl.innerText = window.monthlyBudgetVal;
+        <button class="btn btn-secondary" onclick="showBox('login-box')">
+            گەڕانەوە
+        </button>
 
-            let listHTML = '';
-            window.expensesArray.forEach(item => {
-                listHTML += `
-                    <li class="history-item">
-                        <div class="item-info">
-                            <h4>${item.title} (${item.category})</h4>
-                            <span>${item.dateTime}</span>
+    </div>
+
+
+    <!-- APP -->
+
+    <div id="app-box" class="app-box">
+
+        <div class="top-bar">
+
+            <span id="user-name-display"
+                  class="user-name-display"></span>
+
+            <div class="menu-icon"
+                 onclick="toggleMenu()">
+                ☰
+            </div>
+
+        </div>
+
+
+        <!-- MENU -->
+
+        <div id="dropdown-menu"
+             class="dropdown-menu">
+
+            <div id="user-email-display"
+                 class="dropdown-item">
+            </div>
+
+            <div class="dropdown-item"
+                 onclick="openNameModal()">
+                👤 گۆڕینی ناو
+            </div>
+
+            <div class="dropdown-item"
+                 onclick="openTrashModal()">
+                🗑️ مامەڵە سڕاوەکان
+            </div>
+
+            <div class="dropdown-item"
+                 onclick="switchAccount()">
+                🔄 گۆڕینی ئەکاونت
+            </div>
+
+            <div class="dropdown-item"
+                 style="color:#ef4444"
+                 onclick="deleteAccount()">
+                🗑️ سڕینەوەی هەژمار
+            </div>
+
+            <div class="dropdown-item"
+                 style="color:#fbbf24"
+                 onclick="logoutUser()">
+                🚪 چوونە دەرەوە
+            </div>
+
+        </div>
+
+
+        <!-- TABS -->
+
+        <div class="tabs">
+
+            <button class="tab-btn active"
+                    onclick="switchTab('expenses',event)">
+                خەرجی
+            </button>
+
+            <button class="tab-btn"
+                    onclick="switchTab('income',event)">
+                پارەی هەبوو
+            </button>
+
+        </div>
+
+
+        <!-- EXPENSES -->
+
+        <div id="expenses-section"
+             class="section active">
+
+            <div class="form-group">
+
+                <label>جۆری خەرجی</label>
+
+                <div class="select-row">
+
+                    <div class="custom-select-container"
+                         style="flex:1">
+
+                        <div id="selected-category-text"
+                             class="custom-select-header"
+                             onclick="toggleCustomDropdown()">
+
+                            خواردن
+
                         </div>
-                        <div class="item-left">
-                            <div class="item-price">-${item.amount}</div>
-                            <button class="btn-danger" onclick="deleteExpense(${item.id})">سڕینەوە</button>
+
+                        <div id="custom-dropdown-list"
+                             class="custom-dropdown-list">
                         </div>
-                    </li>
-                `;
-            });
-            let listEl = document.getElementById('expense-list');
-            if(listEl) listEl.innerHTML = listHTML;
+
+                    </div>
+
+                    <button class="add-category-btn"
+                            onclick="addCategory()">
+                        +
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>ناوی شت</label>
+
+                <input type="text"
+                       id="expense-title">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>بڕی پارە</label>
+
+                <input type="number"
+                       id="expense-amount">
+
+            </div>
+
+
+            <button class="btn"
+                    onclick="addExpense()">
+                تۆمارکردنی خەرجی
+            </button>
+
+
+            <div class="card"
+                 style="border-color:#ef4444">
+
+                <h3>کۆی خەرجی</h3>
+
+                <p id="total-expense"
+                   style="color:#ef4444">
+                    0
+                </p>
+
+            </div>
+
+
+            <ul id="expense-list"
+                class="history-list">
+            </ul>
+
+        </div>
+
+
+        <!-- INCOME -->
+
+        <div id="income-section"
+             class="section">
+
+            <div class="card">
+
+                <h3>پارەی هەبوو</h3>
+
+                <p id="display-budget">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>پارەی نوێ</label>
+
+                <input type="number"
+                       id="monthly-budget-input">
+
+            </div>
+
+
+            <button class="btn"
+                    onclick="saveBudget()">
+                پاشەکەوتکردن
+            </button>
+
+
+            <div class="card"
+                 style="border-color:#10b981">
+
+                <h3>پارەی ماوە</h3>
+
+                <p id="remaining-budget"
+                   style="color:#10b981">
+                    0
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MODAL -->
+
+<div id="generic-modal"
+     class="custom-modal">
+
+    <div class="modal-content">
+
+        <div id="modal-title"
+             class="modal-header">
+        </div>
+
+        <div id="modal-subtitle"
+             class="modal-sub">
+        </div>
+
+        <div id="modal-body-content"
+             class="modal-body">
+        </div>
+
+        <div class="modal-buttons">
+
+            <button id="modal-cancel-btn"
+                    class="modal-btn modal-btn-cancel"
+                    onclick="closeModal()">
+                پەشیمانبوونەوە
+            </button>
+
+            <button id="modal-ok-btn"
+                    class="modal-btn modal-btn-confirm">
+                باشە
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- FIREBASE + JAVASCRIPT -->
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    sendPasswordResetEmail,
+    onAuthStateChanged,
+    updateProfile,
+    deleteUser
+}
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    deleteDoc
+}
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+    apiKey: "AIzaSyDZNuDC7hPOI6RNCfjcP-nfMN12knaSX0M",
+
+    authDomain: "my-wallet-49a52.firebaseapp.com",
+
+    projectId: "my-wallet-49a52",
+
+    storageBucket: "my-wallet-49a52.firebasestorage.app",
+
+    messagingSenderId: "765205856247",
+
+    appId: "1:765205856247:web:4dee2b3f97abb3475bb8f2"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+const db = getFirestore(app);
+
+
+let currentUserUid = null;
+
+let categories = [
+    "خواردن و خواردنەوە",
+    "گواستنەوە",
+    "کەلوپەل",
+    "هیتر"
+];
+
+let selectedCategory = categories[0];
+
+let monthlyBudgetVal = 0;
+
+let expensesArray = [];
+
+let trashArray = [];
+
+
+/* SHOW BOX */
+
+window.showBox = function(id) {
+
+    document
+    .querySelectorAll(".auth-box")
+    .forEach(box => box.classList.remove("active"));
+
+    document
+    .getElementById(id)
+    .classList.add("active");
+
+};
+
+
+/* REGISTER */
+
+window.registerUser = async function() {
+
+    const email =
+    document.getElementById("reg-email").value.trim();
+
+    const pass =
+    document.getElementById("reg-password").value;
+
+    const confirm =
+    document.getElementById("reg-password-confirm").value;
+
+
+    if(!email || !pass) {
+
+        alert("تکایە هەموو خانەکان پڕبکەرەوە");
+
+        return;
+
+    }
+
+
+    if(pass !== confirm) {
+
+        alert("پاسۆردەکان یەکناگرنەوە");
+
+        return;
+
+    }
+
+
+    try {
+
+        const result =
+        await createUserWithEmailAndPassword(
+            auth,
+            email,
+            pass
+        );
+
+
+        const name =
+        email.split("@")[0];
+
+
+        await updateProfile(
+            result.user,
+            {
+                displayName:name
+            }
+        );
+
+
+        await saveUserData();
+
+
+    }
+    catch(error) {
+
+        alert(error.message);
+
+    }
+
+};
+
+
+/* LOGIN */
+
+window.loginUser = async function() {
+
+    const email =
+    document.getElementById("login-email").value;
+
+    const password =
+    document.getElementById("login-password").value;
+
+
+    try {
+
+        await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+    }
+    catch(error) {
+
+        alert(error.message);
+
+    }
+
+};
+
+
+/* LOGOUT */
+
+window.logoutUser = async function() {
+
+    await signOut(auth);
+
+};
+
+
+/* SWITCH ACCOUNT */
+
+window.switchAccount = async function() {
+
+    await signOut(auth);
+
+};
+
+
+/* RESET PASSWORD */
+
+window.sendResetEmail = async function() {
+
+    const email =
+    document.getElementById("forgot-email").value;
+
+
+    if(!email) {
+
+        alert("ئیمەیڵ بنووسە");
+
+        return;
+
+    }
+
+
+    try {
+
+        await sendPasswordResetEmail(
+            auth,
+            email
+        );
+
+        alert("لینکی گۆڕینەوەی پاسۆرد نێردرا");
+
+        showBox("login-box");
+
+    }
+    catch(error) {
+
+        alert(error.message);
+
+    }
+
+};
+
+
+/* SAVE DATA */
+
+async function saveUserData() {
+
+    if(!currentUserUid) return;
+
+
+    try {
+
+        await setDoc(
+
+            doc(
+                db,
+                "users",
+                currentUserUid
+            ),
+
+            {
+
+                categories,
+
+                selectedCategory,
+
+                monthlyBudgetVal,
+
+                expensesArray,
+
+                trashArray
+
+            },
+
+            {
+
+                merge:true
+
+            }
+
+        );
+
+    }
+    catch(error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* LOAD DATA */
+
+async function loadUserData(uid) {
+
+    try {
+
+        const ref =
+        doc(
+            db,
+            "users",
+            uid
+        );
+
+
+        const snapshot =
+        await getDoc(ref);
+
+
+        if(snapshot.exists()) {
+
+            const data =
+            snapshot.data();
+
+
+            categories =
+            data.categories || categories;
+
+
+            selectedCategory =
+            data.selectedCategory || categories[0];
+
+
+            monthlyBudgetVal =
+            data.monthlyBudgetVal || 0;
+
+
+            expensesArray =
+            data.expensesArray || [];
+
+
+            trashArray =
+            data.trashArray || [];
+
+
+            /* DELETE OLD TRASH AFTER 30 DAYS */
+
+            const thirtyDaysAgo =
+            Date.now()
+            -
+            30
+            *
+            24
+            *
+            60
+            *
+            60
+            *
+            1000;
+
+
+            trashArray =
+            trashArray.filter(
+                item =>
+                !item.deletedAt
+                ||
+                item.deletedAt
+                >
+                thirtyDaysAgo
+            );
+
+
+            await saveUserData();
+
         }
-    </script>
+        else {
+
+            await saveUserData();
+
+        }
+
+    }
+    catch(error) {
+
+        console.error(
+            "Firestore Error:",
+            error
+        );
+
+    }
+
+
+    initCategories();
+
+    renderAll();
+
+}
+
+
+/* AUTH STATE */
+
+onAuthStateChanged(
+    auth,
+
+    async(user) => {
+
+        const loading =
+        document.getElementById(
+            "loading-screen"
+        );
+
+
+        if(user) {
+
+            currentUserUid =
+            user.uid;
+
+
+            document
+            .querySelectorAll(".auth-box")
+            .forEach(
+                box =>
+                box.classList.remove("active")
+            );
+
+
+            document
+            .getElementById("app-box")
+            .classList.add("active");
+
+
+            document
+            .getElementById("user-name-display")
+            .innerText =
+            user.displayName
+            ||
+            "بەکارهێنەر";
+
+
+            document
+            .getElementById("user-email-display")
+            .innerText =
+            "📧 "
+            +
+            user.email;
+
+
+            await loadUserData(
+                user.uid
+            );
+
+
+            loading.style.display =
+            "none";
+
+        }
+
+        else {
+
+            currentUserUid =
+            null;
+
+
+            document
+            .getElementById("app-box")
+            .classList.remove("active");
+
+
+            document
+            .getElementById("login-box")
+            .classList.add("active");
+
+
+            loading.style.display =
+            "none";
+
+        }
+
+    }
+
+);
+
+
+/* ADD EXPENSE */
+
+window.addExpense =
+async function() {
+
+    const title =
+    document
+    .getElementById("expense-title")
+    .value
+    .trim();
+
+
+    const amount =
+    parseFloat(
+
+        document
+        .getElementById("expense-amount")
+        .value
+
+    );
+
+
+    if(
+        !title
+        ||
+        isNaN(amount)
+        ||
+        amount <= 0
+    ) {
+
+        alert("زانیارییەکان بە دروستی بنووسە");
+
+        return;
+
+    }
+
+
+    const item = {
+
+        id: Date.now(),
+
+        category:
+        selectedCategory,
+
+        title,
+
+        amount,
+
+        dateTime:
+        new Date()
+        .toLocaleString()
+
+    };
+
+
+    expensesArray.push(item);
+
+
+    await saveUserData();
+
+
+    renderAll();
+
+
+    document
+    .getElementById("expense-title")
+    .value = "";
+
+
+    document
+    .getElementById("expense-amount")
+    .value = "";
+
+};
+
+
+/* DELETE EXPENSE */
+
+window.deleteExpense =
+async function(id) {
+
+    const index =
+    expensesArray.findIndex(
+        item =>
+        item.id === id
+    );
+
+
+    if(index === -1) return;
+
+
+    const item =
+    expensesArray.splice(
+        index,
+        1
+    )[0];
+
+
+    item.deletedAt =
+    Date.now();
+
+
+    trashArray.push(item);
+
+
+    await saveUserData();
+
+
+    renderAll();
+
+};
+
+
+/* SAVE BUDGET */
+
+window.saveBudget =
+async function() {
+
+    const amount =
+    parseFloat(
+
+        document
+        .getElementById(
+            "monthly-budget-input"
+        )
+        .value
+
+    );
+
+
+    if(
+        isNaN(amount)
+        ||
+        amount < 0
+    ) {
+
+        alert("بڕی پارەی دروست بنووسە");
+
+        return;
+
+    }
+
+
+    monthlyBudgetVal =
+    amount;
+
+
+    await saveUserData();
+
+
+    renderAll();
+
+};
+
+
+/* RENDER */
+
+function renderAll() {
+
+    const total =
+    expensesArray.reduce(
+
+        (
+            sum,
+            item
+        )
+        =>
+        sum
+        +
+        Number(item.amount),
+
+        0
+
+    );
+
+
+    document
+    .getElementById(
+        "total-expense"
+    )
+    .innerText =
+    total;
+
+
+    document
+    .getElementById(
+        "display-budget"
+    )
+    .innerText =
+    monthlyBudgetVal;
+
+
+    document
+    .getElementById(
+        "monthly-budget-input"
+    )
+    .value =
+    monthlyBudgetVal;
+
+
+    const remaining =
+    monthlyBudgetVal
+    -
+    total;
+
+
+    const remainingElement =
+    document
+    .getElementById(
+        "remaining-budget"
+    );
+
+
+    remainingElement.innerText =
+    remaining;
+
+
+    let html = "";
+
+
+    expensesArray
+    .slice()
+    .reverse()
+    .forEach(
+
+        item => {
+
+            html += `
+
+            <li class="history-item">
+
+                <div class="item-info">
+
+                    <h4>
+                        ${item.title}
+                    </h4>
+
+                    <span>
+                        ${item.category}
+                        -
+                        ${item.dateTime}
+                    </span>
+
+                </div>
+
+
+                <div class="item-left">
+
+                    <div class="item-price">
+
+                        -${item.amount}
+
+                    </div>
+
+
+                    <button
+                        class="btn-danger"
+                        onclick="deleteExpense(${item.id})">
+
+                        سڕینەوە
+
+                    </button>
+
+                </div>
+
+            </li>
+
+            `;
+
+        }
+
+    );
+
+
+    document
+    .getElementById(
+        "expense-list"
+    )
+    .innerHTML =
+    html;
+
+}
+
+
+/* CATEGORIES */
+
+function initCategories() {
+
+    const list =
+    document
+    .getElementById(
+        "custom-dropdown-list"
+    );
+
+
+    list.innerHTML =
+    "";
+
+
+    document
+    .getElementById(
+        "selected-category-text"
+    )
+    .innerHTML =
+    selectedCategory
+    +
+    " ▼";
+
+
+    categories.forEach(
+
+        category => {
+
+            const div =
+            document.createElement("div");
+
+
+            div.className =
+            "custom-option";
+
+
+            div.innerHTML =
+            `
+            <span>
+                ${category}
+            </span>
+
+            <span
+                class="option-delete">
+
+                ×
+
+            </span>
+            `;
+
+
+            div.onclick =
+            async() => {
+
+                selectedCategory =
+                category;
+
+
+                await saveUserData();
+
+
+                initCategories();
+
+
+                toggleCustomDropdown();
+
+            };
+
+
+            list.appendChild(div);
+
+        }
+
+    );
+
+}
+
+
+window.toggleCustomDropdown =
+function() {
+
+    document
+    .getElementById(
+        "custom-dropdown-list"
+    )
+    .classList.toggle(
+        "active"
+    );
+
+};
+
+
+/* ADD CATEGORY */
+
+window.addCategory =
+async function() {
+
+    const category =
+    prompt(
+        "ناوی جۆری نوێ بنووسە"
+    );
+
+
+    if(
+        !category
+        ||
+        categories.includes(category)
+    ) return;
+
+
+    categories.push(category);
+
+
+    selectedCategory =
+    category;
+
+
+    await saveUserData();
+
+
+    initCategories();
+
+};
+
+
+/* MENU */
+
+window.toggleMenu =
+function() {
+
+    document
+    .getElementById(
+        "dropdown-menu"
+    )
+    .classList.toggle(
+        "active"
+    );
+
+};
+
+
+/* TABS */
+
+window.switchTab =
+function(
+    name,
+    event
+) {
+
+    document
+    .querySelectorAll(".tab-btn")
+    .forEach(
+        button =>
+        button.classList.remove("active")
+    );
+
+
+    document
+    .querySelectorAll(".section")
+    .forEach(
+        section =>
+        section.classList.remove("active")
+    );
+
+
+    event.target
+    .classList.add(
+        "active"
+    );
+
+
+    document
+    .getElementById(
+        name + "-section"
+    )
+    .classList.add(
+        "active"
+    );
+
+};
+
+
+/* DELETE ACCOUNT */
+
+window.deleteAccount =
+async function() {
+
+    if(
+        !confirm(
+            "دڵنیایت دەتەوێت هەژمارەکەت بسڕیتەوە؟"
+        )
+    ) return;
+
+
+    try {
+
+        await deleteDoc(
+
+            doc(
+                db,
+                "users",
+                currentUserUid
+            )
+
+        );
+
+
+        await deleteUser(
+            auth.currentUser
+        );
+
+
+    }
+    catch(error) {
+
+        alert(
+            "پێویستە سەرەتا دووبارە بچیتە ژوورەوە، پاشان سڕینەوە بکە."
+        );
+
+    }
+
+};
+
+
+/* TRASH */
+
+window.openTrashModal =
+function() {
+
+    let html =
+    "";
+
+
+    trashArray.forEach(
+
+        item => {
+
+            html += `
+
+            <div class="trash-row">
+
+                <div>
+
+                    <b>
+                        ${item.title}
+                    </b>
+
+                    -
+                    ${item.amount}
+
+                </div>
+
+
+                <button
+                    class="btn-restore"
+                    onclick="restoreExpense(${item.id})">
+
+                    گەڕانەوە
+
+                </button>
+
+            </div>
+
+            `;
+
+        }
+
+    );
+
+
+    if(
+        !html
+    ) {
+
+        html =
+        "هیچ مامەڵەی سڕاوە نییە";
+
+    }
+
+
+    document
+    .getElementById(
+        "modal-title"
+    )
+    .innerText =
+    "مامەڵە سڕاوەکان";
+
+
+    document
+    .getElementById(
+        "modal-body-content"
+    )
+    .innerHTML =
+    html;
+
+
+    document
+    .getElementById(
+        "modal-ok-btn"
+    )
+    .style.display =
+    "none";
+
+
+    document
+    .getElementById(
+        "generic-modal"
+    )
+    .classList.add(
+        "active"
+    );
+
+};
+
+
+window.restoreExpense =
+async function(id) {
+
+    const index =
+    trashArray.findIndex(
+        item =>
+        item.id === id
+    );
+
+
+    if(index === -1) return;
+
+
+    const item =
+    trashArray.splice(
+        index,
+        1
+    )[0];
+
+
+    delete item.deletedAt;
+
+
+    expensesArray.push(item);
+
+
+    await saveUserData();
+
+
+    renderAll();
+
+
+    openTrashModal();
+
+};
+
+
+/* NAME */
+
+window.openNameModal =
+function() {
+
+    const name =
+    prompt(
+        "ناوی نوێ بنووسە"
+    );
+
+
+    if(
+        !name
+    ) return;
+
+
+    updateProfile(
+        auth.currentUser,
+        {
+            displayName:name
+        }
+    )
+    .then(
+        () => {
+
+            document
+            .getElementById(
+                "user-name-display"
+            )
+            .innerText =
+            name;
+
+        }
+    );
+
+};
+
+
+/* CLOSE MODAL */
+
+window.closeModal =
+function() {
+
+    document
+    .getElementById(
+        "generic-modal"
+    )
+    .classList.remove(
+        "active"
+    );
+
+};
+
+</script>
+
 </body>
 </html>
