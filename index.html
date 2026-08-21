@@ -402,7 +402,7 @@
                 title.innerText = 'سڕینەوەی هەژمار';
                 sub.innerText = 'بۆ دلنیابوونەوە پاسۆردەکەت بنووسە';
                 body.innerHTML = `<input type="password" id="modal-input-field" placeholder="پاسۆردی هەژمار">`;
-                okBtn.innerText = 'سڕینەوە';
+                okBtn.innerText = 'سڕینەوەی یەکجاری';
                 okBtn.onclick = async function() {
                     let pass = document.getElementById('modal-input-field').value;
                     if (pass && auth.currentUser) {
@@ -410,11 +410,15 @@
                         let uid = user.uid;
                         let cred = EmailAuthProvider.credential(user.email, pass);
                         try {
+                            // سەرەتا دڵنیایی و Re-auth دەکرێت
                             await reauthenticateWithCredential(user, cred);
+                            // سڕینەوەی داتاکان لە فاایەربەیس Firestore
                             await deleteDoc(doc(db, "users", uid));
+                            // سڕینەوەی تەواوی ئەکاونت لە Authentication
                             await deleteUser(user);
                             closeCustomModal();
-                            window.location.reload();
+                            showCustomAlert('سەرکەوتوو', 'هژمارەکەت بە تەواوی لە فایربەیس سڕایەوە.');
+                            setTimeout(() => { window.location.reload(); }, 1500);
                         } catch (err) {
                             showCustomAlert('هەڵە', 'پاسۆردەکە هەڵەیە یان کێشەیەک ڕویدا: ' + err.message);
                         }
@@ -530,10 +534,8 @@
                     window.monthlyBudgetVal = 0;
                     window.expensesArray = [];
                     window.trashArray = [];
-                    isDataLoaded = true;
-                    await saveUserDataToCloud();
                 }
-                isDataLoaded = true;
+                isDataLoaded = true; // لێرەدا قفڵەکە دەکرێتەوە بۆ ڕێگەدان بە پاشەکەوتکردن
                 initCategories();
                 renderAll();
             } catch(e) {
