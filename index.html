@@ -305,7 +305,9 @@
         }
 
         window.logoutUser = function() {
-            toggleMenu();
+            if(document.getElementById('dropdown-menu').classList.contains('active')) {
+                toggleMenu();
+            }
             signOut(auth);
         }
 
@@ -408,14 +410,15 @@
                         let cred = EmailAuthProvider.credential(user.email, pass);
                         try {
                             await reauthenticateWithCredential(user, cred);
-                            // سڕینەوەی داتا لە Firestore
                             await deleteDoc(doc(db, "users", uid));
-                            // سڕینەوەی تەواوی ئەکاونتەکە لە Authentication و گەڕانەوە بۆ شاشەی چوونە ژوورەوە یان تۆمارکردنی نوێ
                             await deleteUser(user);
                             closeCustomModal();
+                            await signOut(auth);
                         } catch (err) {
                             showCustomAlert('هەڵە', 'پاسۆردەکە هەڵەیە یان کێشەیەک ڕویدا: ' + err.message);
                         }
+                    } else {
+                        showCustomAlert('تێبینی', 'تکایە پاسۆردەکەت بنووسە!');
                     }
                 };
             }
@@ -502,7 +505,7 @@
                     monthlyBudgetVal: window.monthlyBudgetVal,
                     expensesArray: window.expensesArray,
                     trashArray: window.trashArray
-                });
+                }, { merge: true });
             } catch(e) {
                 console.error("Error saving data: ", e);
             }
@@ -514,7 +517,7 @@
                 let docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     let data = docSnap.data();
-                    window.categories = data.categories || ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
+                    window.categories = data.categories && data.categories.length > 0 ? data.categories : ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
                     window.selectedCategory = data.selectedCategory || window.categories[0];
                     window.monthlyBudgetVal = data.monthlyBudgetVal || 0;
                     window.expensesArray = data.expensesArray || [];
@@ -525,6 +528,7 @@
                     window.monthlyBudgetVal = 0;
                     window.expensesArray = [];
                     window.trashArray = [];
+                    await saveUserDataToCloud();
                 }
                 initCategories();
                 renderAll();
@@ -533,7 +537,7 @@
             }
         }
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserUid = user.uid;
                 document.getElementById('login-box').classList.remove('active');
@@ -542,16 +546,23 @@
                 document.getElementById('app-box').classList.add('active');
                 document.getElementById('user-name-display').innerText = user.displayName || "بەکارهێنەر";
                 document.getElementById('user-email-display').innerText = "📧 " + user.email;
-                loadUserDataFromCloud(user.uid);
+                await loadUserDataFromCloud(user.uid);
             } else {
                 currentUserUid = null;
+                window.expensesArray = [];
+                window.trashArray = [];
+                window.monthlyBudgetVal = 0;
+                window.categories = ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
+                renderAll();
                 document.getElementById('app-box').classList.remove('active');
                 document.getElementById('login-box').classList.add('active');
             }
         });
 
         window.switchAccount = function() {
-            toggleMenu();
+            if(document.getElementById('dropdown-menu').classList.contains('active')) {
+                toggleMenu();
+            }
             signOut(auth).then(() => {
                 showBox('login-box');
             });
