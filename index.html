@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
         body { background: #0f172a; color: #f8fafc; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 480px; background: #1e293b; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .container { width: 100%; max-width: 480px; background: #1e293b; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; }
         h1 { text-align: center; margin-bottom: 20px; font-size: 22px; color: #38bdf8; }
         
         .form-group { margin-bottom: 15px; }
@@ -27,6 +27,16 @@
         .link-text { text-align: center; margin-top: 15px; font-size: 13px; color: #38bdf8; cursor: pointer; }
         .link-text:hover { text-decoration: underline; }
 
+        /* Top Bar & Menu */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .user-title { font-size: 14px; color: #38bdf8; font-weight: bold; }
+        .menu-icon { font-size: 20px; cursor: pointer; color: #f8fafc; background: #334155; padding: 5px 10px; border-radius: 6px; }
+        
+        .dropdown-menu { display: none; position: absolute; top: 60px; right: 20px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; width: 220px; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .dropdown-menu.active { display: block; }
+        .dropdown-item { padding: 12px; font-size: 13px; color: #f8fafc; cursor: pointer; border-bottom: 1px solid #1e293b; }
+        .dropdown-item:hover { background: #1e293b; color: #38bdf8; }
+
         /* Tabs & Categories */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 12px; background: #334155; border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; }
@@ -37,7 +47,7 @@
         .categories-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
         .category-chip { background: #0f172a; border: 1px solid #475569; color: #f8fafc; padding: 8px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .category-chip.selected { background: #38bdf8; color: #0f172a; font-weight: bold; }
-        .category-chip span { color: #ef4444; font-weight: bold; cursor: pointer; }
+        .category-chip span { color: #ef4444; font-weight: bold; cursor: pointer; font-size: 16px; }
 
         .card { background: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 4px solid #38bdf8; }
         .card h3 { font-size: 14px; color: #94a3b8; margin-bottom: 5px; }
@@ -70,7 +80,18 @@
             </div>
             <button class="btn" onclick="loginUser()">چوونە ژوورەوە</button>
             <button class="btn btn-secondary" onclick="showBox('register-box')">ئەکاونتت نییە؟ دروستی بکە</button>
-            <p class="link-text" onclick="forgotPassword()">پاسۆردەکەت بیرچووەتەوە؟</p>
+            <p class="link-text" onclick="showForgotBox()">پاسۆردەکەت بیرچووەتەوە؟</p>
+        </div>
+
+        <!-- FORGOT PASSWORD BOX -->
+        <div id="forgot-box" class="auth-box">
+            <h2 style="text-align: center; margin-bottom: 15px; font-size: 18px; color: #94a3b8;">گۆڕینەوەی پاسۆرد</h2>
+            <div class="form-group">
+                <label>ئیمەیڵی خۆت بنووسە</label>
+                <input type="email" id="forgot-email" placeholder="example@gmail.com">
+            </div>
+            <button class="btn" onclick="sendResetEmail()">ناردنی ڤێریفای بۆ ئیمەیڵ</button>
+            <button class="btn btn-secondary" onclick="showBox('login-box')">گەڕانەوە بۆ چوونە ژوورەوە</button>
         </div>
 
         <!-- 2. REGISTER SCREEN -->
@@ -94,9 +115,18 @@
 
         <!-- 3. MAIN APP SCREEN -->
         <div id="app-box" class="app-box">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span id="user-email-display" style="font-size: 12px; color: #38bdf8;"></span>
-                <button class="btn-danger" onclick="logoutUser()">چوونە دەرەوە</button>
+            <!-- Top Bar with Menu -->
+            <div class="top-bar">
+                <span id="user-email-display" class="user-title"></span>
+                <div class="menu-icon" onclick="toggleMenu()">☰</div>
+            </div>
+
+            <!-- Dropdown Menu -->
+            <div id="dropdown-menu" class="dropdown-menu">
+                <div class="dropdown-item" onclick="promptChangeName()">گۆڕینی ناوی هەژمار</div>
+                <div class="dropdown-item" onclick="promptChangeEmail()">گۆڕینی ئیمەیڵی هەژمار</div>
+                <div class="dropdown-item" onclick="openTrash()">سڕاوەکان (تراش - ٣٠ ڕۆژ)</div>
+                <div class="dropdown-item" style="color: #ef4444;" onclick="logoutUser()">چوونە دەرەوە</div>
             </div>
 
             <div class="tabs">
@@ -158,7 +188,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateEmail, updateProfile, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDZNuDC7hPOI6RNCfjcP-nfMN12knaSX0M",
@@ -175,6 +205,11 @@
         window.showBox = function(boxId) {
             document.querySelectorAll('.auth-box').forEach(b => b.classList.remove('active'));
             document.getElementById(boxId).classList.add('active');
+        }
+
+        window.showForgotBox = function() {
+            document.querySelectorAll('.auth-box').forEach(b => b.classList.remove('active'));
+            document.getElementById('forgot-box').classList.add('active');
         }
 
         window.registerUser = function() {
@@ -210,27 +245,68 @@
             signOut(auth);
         }
 
-        window.forgotPassword = function() {
-            let email = document.getElementById('login-email').value;
+        window.sendResetEmail = function() {
+            let email = document.getElementById('forgot-email').value;
             if (!email) {
-                alert('تکایە سەرەتا ئیمەیڵەکەت لە خانەی ئیمەیڵ بنووسە!');
+                alert('تکایە ئیمەیڵەکەت بنووسە!');
                 return;
             }
             sendPasswordResetEmail(auth, email)
                 .then(() => {
-                    alert('پشکنین چووەتەوە بۆ ئیمەیڵەکەت! تکایە سەری بەشی Spamـیش بکە ئەگەر لە Inbox نەبوو.');
+                    alert('تکایە ڤێریفای بۆ ئیمەیڵەکەت چووەتەوە، بەشی Spam لەبیر مەکە!');
+                    showBox('login-box');
                 })
                 .catch((error) => {
                     alert('هەڵە ڕویدا: ' + error.message);
                 });
         }
 
+        window.toggleMenu = function() {
+            document.getElementById('dropdown-menu').classList.toggle('active');
+        }
+
+        window.promptChangeName = function() {
+            toggleMenu();
+            let newName = prompt('ناوی نوێی هەژمار بنووسە:');
+            if (newName && auth.currentUser) {
+                updateProfile(auth.currentUser, { displayName: newName }).then(() => {
+                    document.getElementById('user-email-display').innerText = auth.currentUser.displayName || auth.currentUser.email;
+                    alert('ناو بە سەرکەوتوویی گۆڕدرا!');
+                }).catch(err => alert(err.message));
+            }
+        }
+
+        window.promptChangeEmail = function() {
+            toggleMenu();
+            let newEmail = prompt('ئیمەیڵی نوێ بنووسە:');
+            if (newEmail && auth.currentUser) {
+                verifyBeforeUpdateEmail(auth.currentUser, newEmail).then(() => {
+                    alert('لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت. تکایە بەشی Spamـیش بپشکنە.');
+                }).catch(err => alert(err.message));
+            }
+        }
+
+        window.openTrash = function() {
+            toggleMenu();
+            let trash = JSON.parse(localStorage.getItem('myWalletTrash') || '[]');
+            if (trash.length === 0) {
+                alert('هیچ مامەڵەیەک لە تراش (سڕاوەکان) نییە.');
+                return;
+            }
+            let msg = 'مامەڵە سڕاوەکان (بۆ ماوەی ٣٠ ڕۆژ دەمێننەوە):\n\n';
+            trash.forEach(item => {
+                msg += `- ${item.title}: ${item.amount} (${item.dateTime})\n`;
+            });
+            alert(msg);
+        }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-box').classList.remove('active');
                 document.getElementById('register-box').classList.remove('active');
+                document.getElementById('forgot-box').classList.remove('active');
                 document.getElementById('app-box').classList.add('active');
-                document.getElementById('user-email-display').innerText = user.email;
+                document.getElementById('user-email-display').innerText = user.displayName || user.email;
             } else {
                 document.getElementById('app-box').classList.remove('active');
                 document.getElementById('login-box').classList.add('active');
@@ -327,7 +403,15 @@
         window.deleteExpense = function(id) {
             let index = expensesArray.findIndex(item => item.id === id);
             if (index !== -1) {
-                totalExpenseVal -= expensesArray[index].amount;
+                let deletedItem = expensesArray[index];
+                
+                // Save to Trash with 30 days expiration check concept
+                let trash = JSON.parse(localStorage.getItem('myWalletTrash') || '[]');
+                deletedItem.deletedAt = Date.now();
+                trash.push(deletedItem);
+                localStorage.setItem('myWalletTrash', JSON.stringify(trash));
+
+                totalExpenseVal -= deletedItem.amount;
                 expensesArray.splice(index, 1);
                 document.getElementById('total-expense').innerText = totalExpenseVal;
                 updateRemaining();
