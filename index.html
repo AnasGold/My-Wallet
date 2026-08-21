@@ -42,15 +42,20 @@
         .dropdown-item { padding: 12px 15px; font-size: 14px; color: #f8fafc; cursor: pointer; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 10px; }
         .dropdown-item:hover { background: #1e293b; color: #38bdf8; }
 
+        /* Custom Modern Modal System */
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
         .custom-modal.active { display: flex; }
-        .modal-content { background: #1e293b; border: 1px solid #475569; width: 90%; max-width: 400px; padding: 20px; border-radius: 14px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+        .modal-content { background: #1e293b; border: 1px solid #475569; width: 90%; max-width: 380px; padding: 20px; border-radius: 14px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
         .modal-header { font-size: 16px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; text-align: center; }
         .modal-sub { font-size: 12px; color: #94a3b8; text-align: center; margin-bottom: 15px; }
-        .modal-body { max-height: 250px; overflow-y: auto; margin-bottom: 15px; direction: ltr; text-align: left; }
+        .modal-body { max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
         .trash-row { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #ef4444; font-size: 13px; color: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
-        .modal-close-btn { width: 100%; padding: 10px; background: #334155; border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .modal-close-btn:hover { background: #475569; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .modal-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .modal-btn-confirm { background: #10b981; color: white; }
+        .modal-btn-confirm:hover { background: #059669; }
+        .modal-btn-cancel { background: #334155; color: white; }
+        .modal-btn-cancel:hover { background: #475569; }
 
         .custom-select-container { position: relative; }
         .custom-select-header { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -93,6 +98,7 @@
             </div>
         </div>
 
+        <!-- Authentication Boxes -->
         <div id="login-box" class="auth-box active">
             <h2 style="text-align: center; margin-bottom: 15px; font-size: 18px; color: #94a3b8;">چوونە ژوورەوە</h2>
             <div class="form-group">
@@ -136,6 +142,7 @@
             <button class="btn btn-secondary" onclick="showBox('login-box')">پەشیمان بوویتەوە؟ چوونە ژوورەوە</button>
         </div>
 
+        <!-- Main App Box -->
         <div id="app-box" class="app-box">
             <div class="top-bar">
                 <span id="user-name-display" class="user-name-display"></span>
@@ -144,26 +151,40 @@
 
             <div id="dropdown-menu" class="dropdown-menu">
                 <div class="dropdown-item" id="user-email-display" style="color: #38bdf8; font-size: 12px; border-bottom: 1px dashed #334155;">📧 </div>
-                <div class="dropdown-item" onclick="promptChangeName()">👤 گۆڕینی ناوی هەژمار</div>
-                <div class="dropdown-item" onclick="promptChangeEmail()">✉️ گۆڕینی ئیمەیڵی هەژمار</div>
+                <div class="dropdown-item" onclick="openCustomModal('name')">👤 گۆڕینی ناوی هەژمار</div>
+                <div class="dropdown-item" onclick="openCustomModal('email')">✉️ گۆڕینی ئیمەیڵی هەژمار</div>
                 <div class="dropdown-item" onclick="openTrashModal()">🕒 مامەڵە سڕاوەکان (٣٠ ڕۆژ)</div>
                 <div class="dropdown-item" onclick="switchAccount()">🔄 گۆڕینی ئەکاونت (Switch)</div>
-                <div class="dropdown-item" style="color: #ef4444;" onclick="deleteAccountModal()">🗑️ سڕینەوەی هەژمار</div>
+                <div class="dropdown-item" style="color: #ef4444;" onclick="openCustomModal('delete')">🗑️ سڕینەوەی هەژمار</div>
                 <div class="dropdown-item" style="color: #fbbf24;" onclick="logoutUser()">🚪 چوونە دەرەوە لە هەژمار</div>
             </div>
 
-            <div id="trash-modal" class="custom-modal">
+            <!-- Custom Modern Modal Windows -->
+            <div id="generic-modal" class="custom-modal">
                 <div class="modal-content">
+                    <div id="modal-title" class="modal-header">تێبینی</div>
+                    <div id="modal-subtitle" class="modal-sub"></div>
+                    <div id="modal-body-content" class="modal-body"></div>
+                    <div class="modal-buttons">
+                        <button id="modal-cancel-btn" class="modal-btn modal-btn-cancel" onclick="closeCustomModal()">پەشیمانبوونەوە</button>
+                        <button id="modal-ok-btn" class="modal-btn modal-btn-confirm">تۆمارکردن</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trash Modal -->
+            <div id="trash-modal" class="custom-modal">
+                <div class="modal-content" style="max-width: 400px;">
                     <div class="modal-header">مامەڵە سڕاوەکان</div>
                     <div class="modal-sub">بۆ ماوەی ٣٠ ڕۆژ لەم بەشەدا دەمێننەوە</div>
-                    <div id="trash-body" class="modal-body"></div>
-                    <button class="modal-close-btn" onclick="closeTrashModal()">داخستن</button>
+                    <div id="trash-body" class="modal-body" style="direction: ltr; text-align: left;"></div>
+                    <button class="modal-btn modal-btn-cancel" style="width: 100%; margin-top: 10px;" onclick="closeTrashModal()">داخستن</button>
                 </div>
             </div>
 
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('expenses')">بەشی خەرجی</button>
-                <button class="tab-btn" onclick="switchTab('income')">پارەی هەبوو (پێبوو)</button>
+                <button class="tab-btn active" onclick="switchTab('expenses', event)">بەشی خەرجی</button>
+                <button class="tab-btn" onclick="switchTab('income', event)">پارەی هەبوو (پێبوو)</button>
             </div>
 
             <div id="expenses-section" class="section active">
@@ -176,7 +197,7 @@
                             </div>
                             <div class="custom-dropdown-list" id="custom-dropdown-list"></div>
                         </div>
-                        <button type="button" class="add-category-btn" onclick="promptAddCategory()">+</button>
+                        <button type="button" class="add-category-btn" onclick="openCategoryModal()">+</button>
                     </div>
                 </div>
 
@@ -224,6 +245,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile, verifyBeforeUpdateEmail, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDZNuDC7hPOI6RNCfjcP-nfMN12knaSX0M",
@@ -236,6 +258,14 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserUid = null;
+        window.categories = ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
+        window.selectedCategory = "خواردن و خواردنەوە";
+        window.monthlyBudgetVal = 0;
+        window.expensesArray = [];
+        window.trashArray = [];
 
         window.showBox = function(boxId) {
             document.querySelectorAll('.auth-box').forEach(b => b.classList.remove('active'));
@@ -253,7 +283,7 @@
             let confirmPass = document.getElementById('reg-password-confirm').value;
 
             if (pass !== confirmPass) {
-                alert('پاسۆردەکان یەکناگرنەوە!');
+                showCustomAlert('هەڵە', 'پاسۆردەکان یەکناگرنەوە!');
                 return;
             }
 
@@ -261,11 +291,11 @@
                 .then((userCredential) => {
                     let defaultName = email.split('@')[0];
                     updateProfile(userCredential.user, { displayName: defaultName }).then(() => {
-                        alert('ئەکاونتەکەت بە سەرکەوتوویی دروست بوو!');
+                        showCustomAlert('سەرکەوتوو', 'ئەکاونتەکەت بە سەرکەوتوویی دروست بوو!');
                     });
                 })
                 .catch((error) => {
-                    alert('هەڵە ڕویدا: ' + error.message);
+                    showCustomAlert('هەڵە', error.message);
                 });
         }
 
@@ -275,7 +305,7 @@
 
             signInWithEmailAndPassword(auth, email, pass)
                 .catch((error) => {
-                    alert('هەڵە لە چوونە ژوورەوە: ' + error.message);
+                    showCustomAlert('هەڵە', error.message);
                 });
         }
 
@@ -287,16 +317,16 @@
         window.sendResetEmail = function() {
             let email = document.getElementById('forgot-email').value;
             if (!email) {
-                alert('تکایە ئیمەیڵەکەت بنووسە!');
+                showCustomAlert('تێبینی', 'تکایە ئیمەیڵەکەت بنووسە!');
                 return;
             }
             sendPasswordResetEmail(auth, email)
                 .then(() => {
-                    alert('لینکی گۆڕینەوەی پاسۆرد نێردرا بۆ ئیمەیڵەکەت.');
+                    showCustomAlert('سەرکەوتوو', 'لینکی گۆڕینەوەی پاسۆرد نێردرا بۆ ئیمەیڵەکەت.');
                     showBox('login-box');
                 })
                 .catch((error) => {
-                    alert('هەڵە ڕویدا: ' + error.message);
+                    showCustomAlert('هەڵە', error.message);
                 });
         }
 
@@ -304,51 +334,112 @@
             document.getElementById('dropdown-menu').classList.toggle('active');
         }
 
-        window.promptChangeName = function() {
-            toggleMenu();
-            let newName = prompt('ناوی نوێی هەژمار بنووسە:');
-            if (newName && auth.currentUser) {
-                updateProfile(auth.currentUser, { displayName: newName }).then(() => {
-                    document.getElementById('user-name-display').innerText = auth.currentUser.displayName;
-                    alert('ناو بە سەرکەوتوویی گۆڕدرا!');
-                }).catch(err => alert(err.message));
-            }
+        // Custom Modal UI Logic
+        window.closeCustomModal = function() {
+            document.getElementById('generic-modal').classList.remove('active');
         }
 
-        window.promptChangeEmail = function() {
-            toggleMenu();
-            let newEmail = prompt('ئیمەیڵی نوێ بنووسە:');
-            if (newEmail && auth.currentUser) {
-                verifyBeforeUpdateEmail(auth.currentUser, newEmail).then(() => {
-                    alert('لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت. تکایە پشکنینی ئیمەیڵەکەت بکە.');
-                }).catch(err => alert('هەڵە: ' + err.message));
-            }
+        window.showCustomAlert = function(title, message) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-subtitle').innerText = '';
+            document.getElementById('modal-body-content').innerHTML = `<div style="text-align: center; font-size: 14px; color: #f8fafc; padding: 10px;">${message}</div>`;
+            document.getElementById('modal-cancel-btn').style.display = 'none';
+            let okBtn = document.getElementById('modal-ok-btn');
+            okBtn.innerText = 'باشە';
+            okBtn.onclick = closeCustomModal;
+            document.getElementById('generic-modal').classList.add('active');
         }
 
-        window.switchAccount = function() {
+        window.openCustomModal = function(type) {
             toggleMenu();
-            signOut(auth).then(() => {
-                showBox('login-box');
-            });
+            let modal = document.getElementById('generic-modal');
+            let title = document.getElementById('modal-title');
+            let sub = document.getElementById('modal-subtitle');
+            let body = document.getElementById('modal-body-content');
+            let okBtn = document.getElementById('modal-ok-btn');
+            let cancelBtn = document.getElementById('modal-cancel-btn');
+            cancelBtn.style.display = 'block';
+
+            if (type === 'name') {
+                title.innerText = 'گۆڕینی ناوی هەژمار';
+                sub.innerText = 'ناوی نوێی خۆت بنووسە';
+                body.innerHTML = `<input type="text" id="modal-input-field" placeholder="ناوی نوێ...">`;
+                okBtn.innerText = 'گۆڕین';
+                okBtn.onclick = function() {
+                    let val = document.getElementById('modal-input-field').value;
+                    if (val && auth.currentUser) {
+                        updateProfile(auth.currentUser, { displayName: val }).then(() => {
+                            document.getElementById('user-name-display').innerText = auth.currentUser.displayName;
+                            closeCustomModal();
+                            showCustomAlert('سەرکەوتوو', 'ناو بە سەرکەوتوویی گۆڕدرا!');
+                        }).catch(err => showCustomAlert('هەڵە', err.message));
+                    }
+                };
+            } else if (type === 'email') {
+                title.innerText = 'گۆڕینی ئیمەیڵ';
+                sub.innerText = 'ئیمەیڵی نوێ بنووسە';
+                body.innerHTML = `<input type="email" id="modal-input-field" placeholder="example@gmail.com">`;
+                okBtn.innerText = 'ناردن';
+                okBtn.onclick = function() {
+                    let val = document.getElementById('modal-input-field').value;
+                    if (val && auth.currentUser) {
+                        verifyBeforeUpdateEmail(auth.currentUser, val).then(() => {
+                            closeCustomModal();
+                            showCustomAlert('سەرکەوتوو', 'لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت.');
+                        }).catch(err => showCustomAlert('هەڵە', err.message));
+                    }
+                };
+            } else if (type === 'delete') {
+                title.innerText = 'سڕینەوەی هەژمار';
+                sub.innerText = 'بۆ دلنیابوونەوە پاسۆردەکەت بنووسە';
+                body.innerHTML = `<input type="password" id="modal-input-field" placeholder="پاسۆردی هەژمار">`;
+                okBtn.innerText = 'سڕینەوە';
+                okBtn.onclick = function() {
+                    let pass = document.getElementById('modal-input-field').value;
+                    if (pass && auth.currentUser) {
+                        let user = auth.currentUser;
+                        let cred = EmailAuthProvider.credential(user.email, pass);
+                        reauthenticateWithCredential(user, cred).then(() => {
+                            deleteUser(user).then(() => {
+                                closeCustomModal();
+                            }).catch(err => showCustomAlert('هەڵە', err.message));
+                        }).catch(() => {
+                            showCustomAlert('هەڵە', 'پاسۆردی هەژمار هەڵەیە!');
+                        });
+                    }
+                };
+            }
+            modal.classList.add('active');
         }
 
-        window.deleteAccountModal = function() {
-            toggleMenu();
-            let password = prompt('بۆ سڕینەوەی هەژمار، تکایە پاسۆردەکەت بنووسە:');
-            if (password) {
-                let user = auth.currentUser;
-                let credential = EmailAuthProvider.credential(user.email, password);
-                
-                reauthenticateWithCredential(user, credential).then(() => {
-                    deleteUser(user).then(() => {
-                        alert('هەژمارەکەت بە سەرکەوتوویی سڕایەوە.');
-                    }).catch(error => {
-                        alert('هەڵە لە سڕینەوەی هەژمار: ' + error.message);
-                    });
-                }).catch((error) => {
-                    alert('پاسۆردی هەڵە نووسراوە!');
-                });
-            }
+        window.openCategoryModal = function() {
+            let modal = document.getElementById('generic-modal');
+            let title = document.getElementById('modal-title');
+            let sub = document.getElementById('modal-subtitle');
+            let body = document.getElementById('modal-body-content');
+            let okBtn = document.getElementById('modal-ok-btn');
+            let cancelBtn = document.getElementById('modal-cancel-btn');
+            cancelBtn.style.display = 'block';
+
+            title.innerText = 'زیادکردنی جۆر';
+            sub.innerText = 'ناوی جۆری نوێی خەرجی بنووسە';
+            body.innerHTML = `<input type="text" id="modal-input-field" placeholder="ناوی جۆر...">`;
+            okBtn.innerText = 'زیادکردن';
+            okBtn.onclick = function() {
+                let newCat = document.getElementById('modal-input-field').value.trim();
+                if (newCat) {
+                    if (!window.categories.includes(newCat)) {
+                        window.categories.push(newCat);
+                        window.selectedCategory = newCat;
+                        saveUserDataToCloud();
+                        initCategories();
+                        closeCustomModal();
+                    } else {
+                        showCustomAlert('تێبینی', 'ئەم جۆرە پێشتر هەیە!');
+                    }
+                }
+            };
+            modal.classList.add('active');
         }
 
         window.openTrashModal = function() {
@@ -362,29 +453,23 @@
         }
 
         window.restoreExpense = function(id) {
-            let trash = JSON.parse(localStorage.getItem('myWalletTrash') || '[]');
-            let index = trash.findIndex(item => item.id === id);
+            let index = window.trashArray.findIndex(item => item.id === id);
             if (index !== -1) {
-                let restoredItem = trash[index];
-                trash.splice(index, 1);
-                localStorage.setItem('myWalletTrash', JSON.stringify(trash));
-
-                expensesArray.push(restoredItem);
-                saveAllData();
+                let item = window.trashArray.splice(index, 1)[0];
+                window.expensesArray.push(item);
+                saveUserDataToCloud();
                 renderAll();
                 renderTrashList();
             }
         }
 
         function renderTrashList() {
-            let trash = JSON.parse(localStorage.getItem('myWalletTrash') || '[]');
             let trashBody = document.getElementById('trash-body');
             trashBody.innerHTML = '';
-
-            if (trash.length === 0) {
+            if (window.trashArray.length === 0) {
                 trashBody.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 15px;">هیچ مامەڵەیەک لە سڕاوەکان نییە.</div>';
             } else {
-                trash.forEach(item => {
+                window.trashArray.forEach(item => {
                     trashBody.innerHTML += `
                         <div class="trash-row">
                             <div>
@@ -398,53 +483,99 @@
             }
         }
 
+        // Firestore Database Sync
+        window.saveUserDataToCloud = async function() {
+            if (!currentUserUid) return;
+            try {
+                await setDoc(doc(db, "users", currentUserUid), {
+                    categories: window.categories,
+                    selectedCategory: window.selectedCategory,
+                    monthlyBudgetVal: window.monthlyBudgetVal,
+                    expensesArray: window.expensesArray,
+                    trashArray: window.trashArray
+                });
+            } catch(e) {
+                console.error("Error saving data: ", e);
+            }
+        }
+
+        async function loadUserDataFromCloud(uid) {
+            try {
+                let docRef = doc(db, "users", uid);
+                let docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    let data = docSnap.data();
+                    window.categories = data.categories || ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
+                    window.selectedCategory = data.selectedCategory || window.categories[0];
+                    window.monthlyBudgetVal = data.monthlyBudgetVal || 0;
+                    window.expensesArray = data.expensesArray || [];
+                    window.trashArray = data.trashArray || [];
+                } else {
+                    window.categories = ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
+                    window.selectedCategory = "خواردن و خواردنەوە";
+                    window.monthlyBudgetVal = 0;
+                    window.expensesArray = [];
+                    window.trashArray = [];
+                }
+                initCategories();
+                renderAll();
+            } catch(e) {
+                console.error("Error loading data: ", e);
+            }
+        }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                currentUserUid = user.uid;
                 document.getElementById('login-box').classList.remove('active');
                 document.getElementById('register-box').classList.remove('active');
                 document.getElementById('forgot-box').classList.remove('active');
                 document.getElementById('app-box').classList.add('active');
                 document.getElementById('user-name-display').innerText = user.displayName || "بەکارهێنەر";
                 document.getElementById('user-email-display').innerText = "📧 " + user.email;
+                loadUserDataFromCloud(user.uid);
             } else {
+                currentUserUid = null;
                 document.getElementById('app-box').classList.remove('active');
                 document.getElementById('login-box').classList.add('active');
             }
         });
+
+        window.switchAccount = function() {
+            toggleMenu();
+            signOut(auth).then(() => {
+                showBox('login-box');
+            });
+        }
     </script>
 
     <script>
-        let categories = JSON.parse(localStorage.getItem('myWalletCategories')) || ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
-        let selectedCategory = localStorage.getItem('myWalletSelectedCat') || "خواردن و خواردنەوە";
-        let monthlyBudgetVal = parseFloat(localStorage.getItem('myWalletBudget')) || 0;
-        let expensesArray = JSON.parse(localStorage.getItem('myWalletExpenses')) || [];
-
-        function initCategories() {
+        window.initCategories = function() {
             let list = document.getElementById('custom-dropdown-list');
             let headerText = document.getElementById('selected-category-text');
             if(!list) return;
             
             list.innerHTML = '';
-            if (!categories.includes(selectedCategory) && categories.length > 0) {
-                selectedCategory = categories[0];
+            if (!window.categories.includes(window.selectedCategory) && window.categories.length > 0) {
+                window.selectedCategory = window.categories[0];
             }
             
-            if(categories.length > 0) {
-                headerText.innerHTML = `${selectedCategory} <span>▼</span>`;
+            if(window.categories.length > 0) {
+                headerText.innerHTML = `${window.selectedCategory} <span>▼</span>`;
             } else {
                 headerText.innerHTML = `هیچ جۆرێک نییە <span>▼</span>`;
             }
 
-            categories.forEach(cat => {
+            window.categories.forEach(cat => {
                 let option = document.createElement('div');
                 option.className = 'custom-option';
                 option.innerHTML = `<span>${cat}</span> <span class="option-delete" onclick="deleteCategory(event, '${cat}')">&times;</span>`;
                 option.onclick = (e) => {
                     if(e.target.classList.contains('option-delete')) return;
-                    selectedCategory = cat;
-                    localStorage.setItem('myWalletSelectedCat', selectedCategory);
+                    window.selectedCategory = cat;
                     headerText.innerHTML = `${cat} <span>▼</span>`;
                     list.classList.remove('active');
+                    saveUserDataToCloud();
                 };
                 list.appendChild(option);
             });
@@ -454,38 +585,21 @@
             document.getElementById('custom-dropdown-list').classList.toggle('active');
         }
 
-        window.promptAddCategory = function() {
-            let newCat = prompt('ناوی جۆری نوێی خەرجی بنووسە:');
-            if (newCat && newCat.trim() !== '') {
-                let formatted = newCat.trim();
-                if (!categories.includes(formatted)) {
-                    categories.push(formatted);
-                    selectedCategory = formatted;
-                    localStorage.setItem('myWalletCategories', JSON.stringify(categories));
-                    localStorage.setItem('myWalletSelectedCat', selectedCategory);
-                    initCategories();
-                } else {
-                    alert('ئەم جۆرە پێشتر هەیە!');
-                }
-            }
-        }
-
         window.deleteCategory = function(event, cat) {
             event.stopPropagation();
-            if (categories.length <= 1) {
-                alert('دەبێت لانیکەم یەک جۆری خەرجی بمێنێت!');
+            if (window.categories.length <= 1) {
+                showCustomAlert('تێبینی', 'دەبێت لانیکەم یەک جۆری خەرجی بمێنێت!');
                 return;
             }
-            categories = categories.filter(c => c !== cat);
-            if (selectedCategory === cat) {
-                selectedCategory = categories[0];
+            window.categories = window.categories.filter(c => c !== cat);
+            if (window.selectedCategory === cat) {
+                window.selectedCategory = window.categories[0];
             }
-            localStorage.setItem('myWalletCategories', JSON.stringify(categories));
-            localStorage.setItem('myWalletSelectedCat', selectedCategory);
+            saveUserDataToCloud();
             initCategories();
         }
 
-        window.switchTab = function(tabName) {
+        window.switchTab = function(tabName, event) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
             if (tabName === 'expenses') {
@@ -500,10 +614,10 @@
         window.saveBudget = function() {
             let inputVal = parseFloat(document.getElementById('monthly-budget-input').value);
             if (!isNaN(inputVal)) {
-                monthlyBudgetVal = inputVal;
-                localStorage.setItem('myWalletBudget', monthlyBudgetVal);
+                window.monthlyBudgetVal = inputVal;
+                saveUserDataToCloud();
                 renderAll();
-                alert('پارەی مانگانە نوێکرایەوە!');
+                showCustomAlert('سەرکەوتوو', 'پارەی مانگانە نوێکرایەوە!');
             }
         }
 
@@ -511,57 +625,45 @@
             let title = document.getElementById('expense-title').value;
             let amount = parseFloat(document.getElementById('expense-amount').value);
 
-            if (title && !isNaN(amount) && amount > 0 && categories.length > 0) {
+            if (title && !isNaN(amount) && amount > 0 && window.categories.length > 0) {
                 let now = new Date();
                 let fullDateTime = `${now.toLocaleDateString('en-GB')} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
 
-                expensesArray.push({ id: Date.now(), category: selectedCategory, title, amount, dateTime: fullDateTime });
-                saveAllData();
+                window.expensesArray.push({ id: Date.now(), category: window.selectedCategory, title, amount, dateTime: fullDateTime });
+                saveUserDataToCloud();
                 renderAll();
 
                 document.getElementById('expense-title').value = '';
                 document.getElementById('expense-amount').value = '';
             } else {
-                alert('تکایە خانەکان بە دروستی پڕبکەرەوە یان جۆری خەرجی هەڵبژێرە!');
+                showCustomAlert('هەڵە', 'تکایە خانەکان بە دروستی پڕبکەرەوە یان جۆری خەرجی هەڵبژێرە!');
             }
         }
 
         window.deleteExpense = function(id) {
-            let index = expensesArray.findIndex(item => item.id === id);
+            let index = window.expensesArray.findIndex(item => item.id === id);
             if (index !== -1) {
-                let deletedItem = expensesArray[index];
-                
-                let trash = JSON.parse(localStorage.getItem('myWalletTrash') || '[]');
+                let deletedItem = window.expensesArray.splice(index, 1)[0];
                 deletedItem.deletedAt = Date.now();
-                trash.push(deletedItem);
-                localStorage.setItem('myWalletTrash', JSON.stringify(trash));
-
-                expensesArray.splice(index, 1);
-                saveAllData();
+                window.trashArray.push(deletedItem);
+                saveUserDataToCloud();
                 renderAll();
             }
         }
 
-        function saveAllData() {
-            localStorage.setItem('myWalletExpenses', JSON.stringify(expensesArray));
-            localStorage.setItem('myWalletBudget', monthlyBudgetVal);
-        }
-
-        function renderAll() {
-            // Budget & Total calculation
-            let totalExpenseVal = expensesArray.reduce((sum, item) => sum + item.amount, 0);
+        window.renderAll = function() {
+            let totalExpenseVal = window.expensesArray.reduce((sum, item) => sum + item.amount, 0);
             document.getElementById('total-expense').innerText = totalExpenseVal;
-            document.getElementById('display-budget').innerText = monthlyBudgetVal;
-            document.getElementById('monthly-budget-input').value = monthlyBudgetVal || '';
+            document.getElementById('display-budget').innerText = window.monthlyBudgetVal;
+            document.getElementById('monthly-budget-input').value = window.monthlyBudgetVal || '';
 
-            let remaining = monthlyBudgetVal - totalExpenseVal;
+            let remaining = window.monthlyBudgetVal - totalExpenseVal;
             let remElem = document.getElementById('remaining-budget');
             remElem.innerText = remaining;
             remElem.style.color = remaining < 0 ? '#ef4444' : '#10b981';
 
-            // Render list
             let listHTML = '';
-            expensesArray.forEach(item => {
+            window.expensesArray.forEach(item => {
                 listHTML += `
                     <li class="history-item">
                         <div class="item-info">
@@ -577,10 +679,6 @@
             });
             document.getElementById('expense-list').innerHTML = listHTML;
         }
-
-        // Run on load
-        initCategories();
-        renderAll();
     </script>
 </body>
 </html>
