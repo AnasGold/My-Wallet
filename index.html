@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="ku" dir="rtl">
+<html lang="ku" dir="rtl" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Wallet - حساباتی ڕۆژانە</title>
     <style>
@@ -9,11 +10,11 @@
         body { background: #0f172a; color: #f8fafc; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
         .container { width: 100%; max-width: 480px; background: #1e293b; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; height: fit-content; }
         
-        /* Modern Header Design */
-        .app-header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #334155; }
-        .logo-badge { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #38bdf8, #818cf8); padding: 8px 18px; border-radius: 50px; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); }
-        .logo-badge span { font-size: 22px; }
-        .logo-badge h1 { font-size: 18px; color: #0f172a; font-weight: bold; margin: 0; text-transform: lowercase; }
+        /* Header with Cat Logo */
+        .app-header { text-align: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #334155; }
+        .logo-container { display: inline-flex; align-items: center; gap: 8px; background: #0f172a; padding: 6px 14px; border-radius: 50px; border: 1px solid #475569; }
+        .logo-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .logo-container h1 { font-size: 18px; color: #38bdf8; font-weight: bold; }
 
         .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
@@ -25,6 +26,7 @@
         .btn-secondary { background: #334155; margin-top: 10px; }
         .btn-secondary:hover { background: #475569; }
         .btn-danger { background: #ef4444; padding: 6px 10px; font-size: 12px; border-radius: 6px; border: none; color: white; cursor: pointer; }
+        .btn-restore { background: #3b82f6; padding: 5px 8px; font-size: 11px; border-radius: 6px; border: none; color: white; cursor: pointer; }
 
         .auth-box, .app-box { display: none; }
         .auth-box.active, .app-box.active { display: block; }
@@ -37,19 +39,19 @@
         .user-name-display { font-size: 15px; color: #fbbf24; font-weight: bold; }
         .menu-icon { font-size: 20px; cursor: pointer; color: #fbbf24; background: #0f172a; padding: 6px 12px; border-radius: 8px; border: 1px solid #334155; }
         
-        .dropdown-menu { display: none; position: absolute; top: 110px; right: 20px; background: #0f172a; border: 1px solid #475569; border-radius: 12px; width: 260px; z-index: 20; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .dropdown-menu { display: none; position: absolute; top: 100px; right: 20px; background: #0f172a; border: 1px solid #475569; border-radius: 12px; width: 260px; z-index: 20; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .dropdown-menu.active { display: block; }
         .dropdown-item { padding: 12px 15px; font-size: 14px; color: #f8fafc; cursor: pointer; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 10px; }
         .dropdown-item:hover { background: #1e293b; color: #38bdf8; }
 
-        /* Custom Modal Popup for Trash */
+        /* Custom Modal for Trash */
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
         .custom-modal.active { display: flex; }
         .modal-content { background: #1e293b; border: 1px solid #475569; width: 90%; max-width: 400px; padding: 20px; border-radius: 14px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
         .modal-header { font-size: 16px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; text-align: center; }
         .modal-sub { font-size: 12px; color: #94a3b8; text-align: center; margin-bottom: 15px; }
         .modal-body { max-height: 250px; overflow-y: auto; margin-bottom: 15px; direction: ltr; text-align: left; }
-        .trash-row { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #ef4444; font-size: 13px; color: #f8fafc; display: flex; justify-content: space-between; }
+        .trash-row { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #ef4444; font-size: 13px; color: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
         .modal-close-btn { width: 100%; padding: 10px; background: #334155; border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .modal-close-btn:hover { background: #475569; }
 
@@ -86,13 +88,13 @@
         .item-price { font-weight: bold; color: #ef4444; }
     </style>
 </head>
-<body>
+<body class="notranslate" translate="no">
 
     <div class="container">
-        <!-- New Beautiful Modern Header -->
+        <!-- Header with Custom Cat Image Logo -->
         <div class="app-header">
-            <div class="logo-badge">
-                <span>💎</span>
+            <div class="logo-container">
+                <img src="https://i.ibb.co/6R2B8nL5/decfd613f4aacd5f41f1f210bc073b4b.jpg" alt="Logo" class="logo-img">
                 <h1>my wallet</h1>
             </div>
         </div>
@@ -153,11 +155,12 @@
 
             <!-- Dropdown Menu -->
             <div id="dropdown-menu" class="dropdown-menu">
+                <div class="dropdown-item" id="user-email-display" style="color: #38bdf8; font-size: 12px; border-bottom: 1px dashed #334155;">📧 </div>
                 <div class="dropdown-item" onclick="promptChangeName()">👤 گۆڕینی ناوی هەژمار</div>
                 <div class="dropdown-item" onclick="promptChangeEmail()">✉️ گۆڕینی ئیمەیڵی هەژمار</div>
                 <div class="dropdown-item" onclick="openTrashModal()">🕒 مامەڵە سڕاوەکان (٣٠ ڕۆژ)</div>
                 <div class="dropdown-item" onclick="switchAccount()">🔄 گۆڕینی ئەکاونت (Switch)</div>
-                <div class="dropdown-item" style="color: #ef4444;" onclick="deleteAccount()">🗑️ سڕینەوەی هەژمار</div>
+                <div class="dropdown-item" style="color: #ef4444;" onclick="deleteAccountModal()">🗑️ سڕینەوەی هەژمار</div>
                 <div class="dropdown-item" style="color: #fbbf24;" onclick="logoutUser()">🚪 چوونە دەرەوە لە هەژمار</div>
             </div>
 
@@ -234,7 +237,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile, verifyBeforeUpdateEmail, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile, verifyBeforeUpdateEmail, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDZNuDC7hPOI6RNCfjcP-nfMN12knaSX0M",
@@ -331,8 +334,8 @@
             let newEmail = prompt('ئیمەیڵی نوێ بنووسە:');
             if (newEmail && auth.currentUser) {
                 verifyBeforeUpdateEmail(auth.currentUser, newEmail).then(() => {
-                    alert('لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت.');
-                }).catch(err => alert(err.message));
+                    alert('لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت. تکایە پشکنینی ئیمەیڵەکەت بکە.');
+                }).catch(err => alert('هەڵە: ' + err.message));
             }
         }
 
@@ -343,22 +346,53 @@
             });
         }
 
-        window.deleteAccount = function() {
+        window.deleteAccountModal = function() {
             toggleMenu();
-            if (confirm('ئایا دڵنیایت لە سڕینەوەی هەژمارەکەت؟')) {
+            let password = prompt('بۆ سڕینەوەی هەژمار، تکایە پاسۆردەکەت بنووسە:');
+            if (password) {
                 let user = auth.currentUser;
-                if (user) {
+                let credential = EmailAuthProvider.credential(user.email, password);
+                
+                reauthenticateWithCredential(user, credential).then(() => {
                     deleteUser(user).then(() => {
-                        alert('هەژمارەکەت سڕایەوە.');
+                        alert('هەژمارەکەت بە سەرکەوتوویی سڕایەوە.');
                     }).catch(error => {
-                        alert('هەڵە ڕویدا، تکایە سەرەتا دووبارە بچۆ ژوورەوە: ' + error.message);
+                        alert('هەڵە لە سڕینەوەی هەژمار: ' + error.message);
                     });
-                }
+                }).catch((error) => {
+                    alert('پاسۆردی هەڵە نووسراوە!');
+                });
             }
         }
 
         window.openTrashModal = function() {
             toggleMenu();
+            renderTrashList();
+            document.getElementById('trash-modal').classList.add('active');
+        }
+
+        window.closeTrashModal = function() {
+            document.getElementById('trash-modal').classList.remove('active');
+        }
+
+        window.restoreExpense = function(id) {
+            let trash = JSON.parse(localStorage.getItem('myWalletTrash') || '[]');
+            let index = trash.findIndex(item => item.id === id);
+            if (index !== -1) {
+                let restoredItem = trash[index];
+                trash.splice(index, 1);
+                localStorage.setItem('myWalletTrash', JSON.stringify(trash));
+
+                expensesArray.push(restoredItem);
+                totalExpenseVal += restoredItem.amount;
+                document.getElementById('total-expense').innerText = totalExpenseVal;
+                updateRemaining();
+                renderExpenses();
+                renderTrashList();
+            }
+        }
+
+        function renderTrashList() {
             let trash = JSON.parse(localStorage.getItem('myWalletTrash') || '[]');
             let trashBody = document.getElementById('trash-body');
             trashBody.innerHTML = '';
@@ -369,17 +403,15 @@
                 trash.forEach(item => {
                     trashBody.innerHTML += `
                         <div class="trash-row">
-                            <span><b>${item.title}</b>: -${item.amount}</span>
-                            <span style="color: #94a3b8; font-size: 11px;">${item.dateTime}</span>
+                            <div>
+                                <b>${item.title}</b>: -${item.amount}<br>
+                                <span style="color: #94a3b8; font-size: 10px;">${item.dateTime}</span>
+                            </div>
+                            <button class="btn-restore" onclick="restoreExpense(${item.id})">گەڕانەوە</button>
                         </div>
                     `;
                 });
             }
-            document.getElementById('trash-modal').classList.add('active');
-        }
-
-        window.closeTrashModal = function() {
-            document.getElementById('trash-modal').classList.remove('active');
         }
 
         onAuthStateChanged(auth, (user) => {
@@ -389,6 +421,7 @@
                 document.getElementById('forgot-box').classList.remove('active');
                 document.getElementById('app-box').classList.add('active');
                 document.getElementById('user-name-display').innerText = user.displayName || "بەکارهێنەر";
+                document.getElementById('user-email-display').innerText = "📧 " + user.email;
             } else {
                 document.getElementById('app-box').classList.remove('active');
                 document.getElementById('login-box').classList.add('active');
