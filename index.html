@@ -10,39 +10,45 @@
         .container { width: 100%; max-width: 480px; background: #1e293b; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         h1 { text-align: center; margin-bottom: 20px; font-size: 22px; color: #38bdf8; }
         
-        /* Tabs */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; background: #334155; border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s; }
-        .tab-btn.active { background: #38bdf8; color: #0f172a; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
+        input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; }
+        input:focus { outline: none; border-color: #38bdf8; }
         
+        .btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; margin-top: 5px; }
+        .btn:hover { background: #059669; }
+        .btn-secondary { background: #334155; margin-top: 10px; }
+        .btn-secondary:hover { background: #475569; }
+        .btn-danger { background: #ef4444; padding: 6px 10px; font-size: 12px; border-radius: 6px; border: none; color: white; cursor: pointer; }
+
+        .auth-box, .app-box { display: none; }
+        .auth-box.active, .app-box.active { display: block; }
+        
+        .link-text { text-align: center; margin-top: 15px; font-size: 13px; color: #38bdf8; cursor: pointer; }
+        .link-text:hover { text-decoration: underline; }
+
+        /* Tabs & Categories */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; background: #334155; border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .tab-btn.active { background: #38bdf8; color: #0f172a; }
         .section { display: none; }
         .section.active { display: block; }
 
-        /* Form elements */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
-        input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; }
-        input:focus, select:focus { outline: none; border-color: #38bdf8; }
-        
-        .btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        .btn:hover { background: #059669; }
+        .categories-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .category-chip { background: #0f172a; border: 1px solid #475569; color: #f8fafc; padding: 8px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .category-chip.selected { background: #38bdf8; color: #0f172a; font-weight: bold; }
+        .category-chip span { color: #ef4444; font-weight: bold; cursor: pointer; }
 
-        .btn-danger { background: #ef4444; padding: 6px 10px; font-size: 12px; border-radius: 6px; border: none; color: white; cursor: pointer; }
-        .btn-danger:hover { background: #dc2626; }
-
-        /* Stats Cards */
         .card { background: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 4px solid #38bdf8; }
         .card h3 { font-size: 14px; color: #94a3b8; margin-bottom: 5px; }
         .card p { font-size: 20px; font-weight: bold; color: #38bdf8; }
 
-        /* History List */
-        .history-list { list-style: none; margin-top: 15px; max-height: 250px; overflow-y: auto; }
+        .history-list { list-style: none; margin-top: 15px; max-height: 200px; overflow-y: auto; }
         .history-item { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
         .item-info h4 { font-size: 15px; color: #f8fafc; margin-bottom: 3px; }
         .item-info span { font-size: 11px; color: #64748b; }
         .item-left { display: flex; align-items: center; gap: 10px; }
         .item-price { font-weight: bold; color: #ef4444; }
-
         .flex-row { display: flex; gap: 5px; }
     </style>
 </head>
@@ -51,93 +57,233 @@
     <div class="container">
         <h1>my wallet 💰</h1>
 
-        <!-- Top Navigation Tabs -->
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('expenses')">بەشی خەرجی</button>
-            <button class="tab-btn" onclick="switchTab('income')">پارەی هەبوو (پێبوو)</button>
+        <!-- 1. LOGIN SCREEN -->
+        <div id="login-box" class="auth-box active">
+            <h2 style="text-align: center; margin-bottom: 15px; font-size: 18px; color: #94a3b8;">چوونە ژوورەوە</h2>
+            <div class="form-group">
+                <label>ئیمەیڵ</label>
+                <input type="email" id="login-email">
+            </div>
+            <div class="form-group">
+                <label>پاسۆرد</label>
+                <input type="password" id="login-password">
+            </div>
+            <button class="btn" onclick="loginUser()">چوونە ژوورەوە</button>
+            <button class="btn btn-secondary" onclick="showBox('register-box')">ئەکاونتت نییە؟ دروستی بکە</button>
+            <p class="link-text" onclick="forgotPassword()">پاسۆردەکەت بیرچووەتەوە؟</p>
         </div>
 
-        <!-- 1. Expenses Section -->
-        <div id="expenses-section" class="section active">
+        <!-- 2. REGISTER SCREEN -->
+        <div id="register-box" class="auth-box">
+            <h2 style="text-align: center; margin-bottom: 15px; font-size: 18px; color: #94a3b8;">دروستکردنی ئەکاونت</h2>
             <div class="form-group">
-                <label>جۆری خەرجی (ڕۆیشتوو)</label>
-                <div class="flex-row">
-                    <select id="expense-category" style="flex: 1;"></select>
-                    <button type="button" class="btn" style="width: auto; padding: 0 15px;" onclick="addCategory()">+</button>
+                <label>ئیمەیڵ</label>
+                <input type="email" id="reg-email">
+            </div>
+            <div class="form-group">
+                <label>پاسۆرد</label>
+                <input type="password" id="reg-password">
+            </div>
+            <div class="form-group">
+                <label>دووبارەکردنەوەی پاسۆرد</label>
+                <input type="password" id="reg-password-confirm">
+            </div>
+            <button class="btn" onclick="registerUser()">دروستکردنی ئەکاونت</button>
+            <button class="btn btn-secondary" onclick="showBox('login-box')">پەشیمان بوویتەوە؟ چوونە ژوورەوە</button>
+        </div>
+
+        <!-- 3. MAIN APP SCREEN -->
+        <div id="app-box" class="app-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span id="user-email-display" style="font-size: 12px; color: #38bdf8;"></span>
+                <button class="btn-danger" onclick="logoutUser()">چوونە دەرەوە</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('expenses')">بەشی خەرجی</button>
+                <button class="tab-btn" onclick="switchTab('income')">پارەی هەبوو (پێبوو)</button>
+            </div>
+
+            <div id="expenses-section" class="section active">
+                <div class="form-group">
+                    <label>جۆری خەرجی</label>
+                    <div class="categories-container" id="categories-box"></div>
+                    <div class="flex-row">
+                        <input type="text" id="new-category-input" placeholder="جۆری نوێ...">
+                        <button type="button" class="btn" style="width: auto; padding: 0 15px; margin:0;" onclick="addCategory()">+</button>
+                    </div>
                 </div>
+
+                <div class="form-group">
+                    <label>شتی کڕدراو (تایتڵ)</label>
+                    <input type="text" id="expense-title">
+                </div>
+
+                <div class="form-group">
+                    <label>بڕی پارە</label>
+                    <input type="number" id="expense-amount">
+                </div>
+
+                <button class="btn" onclick="addExpense()">تۆمارکردنی خەرجی</button>
+
+                <div class="card" style="margin-top: 15px; border-color: #ef4444;">
+                    <h3>کۆی پارەی خەرجکراو</h3>
+                    <p id="total-expense" style="color: #ef4444;">0</p>
+                </div>
+
+                <ul class="history-list" id="expense-list"></ul>
             </div>
 
-            <div class="form-group">
-                <label>شتی کڕدراو (تایتڵ)</label>
-                <input type="text" id="expense-title" placeholder="">
-            </div>
+            <div id="income-section" class="section">
+                <div class="card">
+                    <h3>پارەی بەردەست بۆ ئەم مانگە</h3>
+                    <p id="display-budget">0</p>
+                </div>
 
-            <div class="form-group">
-                <label>بڕی پارە</label>
-                <input type="number" id="expense-amount" placeholder="">
-            </div>
+                <div class="form-group">
+                    <label>دەستکاری کردنی پارەی هەبوو (پێبوو)</label>
+                    <input type="number" id="monthly-budget-input">
+                </div>
 
-            <button class="btn" onclick="addExpense()">تۆمارکردنی خەرجی</button>
-
-            <div class="card" style="margin-top: 20px; border-color: #ef4444;">
-                <h3>کۆی پارەی خەرجکراو</h3>
-                <p id="total-expense" style="color: #ef4444;">0</p>
-            </div>
-
-            <ul class="history-list" id="expense-list"></ul>
-        </div>
-
-        <!-- 2. Income Section (پارەی هەبوو) -->
-        <div id="income-section" class="section">
-            <div class="card">
-                <h3>پارەی بەردەست بۆ ئەم مانگە</h3>
-                <p id="display-budget">0</p>
-            </div>
-
-            <div class="form-group">
-                <label>دەستکاری کردنی پارەی هەبوو (پێبوو)</label>
-                <input type="number" id="monthly-budget-input" placeholder="">
-            </div>
-
-            <button class="btn" onclick="saveBudget()">نوێکردنەوەی پارە</button>
-            
-            <div class="card" style="margin-top: 20px; border-color: #10b981;">
-                <h3>پارەی ماوەتەوە</h3>
-                <p id="remaining-budget" style="color: #10b981;">0</p>
+                <button class="btn" onclick="saveBudget()">نوێکردنەوەی پارە</button>
+                
+                <div class="card" style="margin-top: 15px; border-color: #10b981;">
+                    <h3>پارەی ماوەتەوە</h3>
+                    <p id="remaining-budget" style="color: #10b981;">0</p>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDZNuDC7hPOI6RNCfjcP-nfMN12knaSX0M",
+            authDomain: "my-wallet-49a52.firebaseapp.com",
+            projectId: "my-wallet-49a52",
+            storageBucket: "my-wallet-49a52.firebasestorage.app",
+            messagingSenderId: "765205856247",
+            appId: "1:765205856247:web:4dee2b3f97abb3475bb8f2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.showBox = function(boxId) {
+            document.querySelectorAll('.auth-box').forEach(b => b.classList.remove('active'));
+            document.getElementById(boxId).classList.add('active');
+        }
+
+        window.registerUser = function() {
+            let email = document.getElementById('reg-email').value;
+            let pass = document.getElementById('reg-password').value;
+            let confirmPass = document.getElementById('reg-password-confirm').value;
+
+            if (pass !== confirmPass) {
+                alert('پاسۆردەکان یەکناگرنەوە!');
+                return;
+            }
+
+            createUserWithEmailAndPassword(auth, email, pass)
+                .then(() => {
+                    alert('ئەکاونتەکەت بە سەرکەوتوویی دروست بوو!');
+                })
+                .catch((error) => {
+                    alert('هەڵە ڕویدا: ' + error.message);
+                });
+        }
+
+        window.loginUser = function() {
+            let email = document.getElementById('login-email').value;
+            let pass = document.getElementById('login-password').value;
+
+            signInWithEmailAndPassword(auth, email, pass)
+                .catch((error) => {
+                    alert('هەڵە لە چوونە ژوورەوە: ' + error.message);
+                });
+        }
+
+        window.logoutUser = function() {
+            signOut(auth);
+        }
+
+        window.forgotPassword = function() {
+            let email = document.getElementById('login-email').value;
+            if (!email) {
+                alert('تکایە سەرەتا ئیمەیڵەکەت لە خانەی ئیمەیڵ بنووسە!');
+                return;
+            }
+            sendPasswordResetEmail(auth, email)
+                .then(() => {
+                    alert('پشکنین چووەتەوە بۆ ئیمەیڵەکەت! تکایە سەری بەشی Spamـیش بکە ئەگەر لە Inbox نەبوو.');
+                })
+                .catch((error) => {
+                    alert('هەڵە ڕویدا: ' + error.message);
+                });
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-box').classList.remove('active');
+                document.getElementById('register-box').classList.remove('active');
+                document.getElementById('app-box').classList.add('active');
+                document.getElementById('user-email-display').innerText = user.email;
+            } else {
+                document.getElementById('app-box').classList.remove('active');
+                document.getElementById('login-box').classList.add('active');
+            }
+        });
+    </script>
+
     <script>
-        let categories = ["خواردن و خواردنەوە", "گواستنەوە", "کڕینی کەلوپەل", "هیتر"];
+        let categories = ["خواردن", "گواستنەوە", "کەلوپەل", "هیتر"];
+        let selectedCategory = "خواردن";
         let totalExpenseVal = 0;
         let monthlyBudgetVal = 0;
         let expensesArray = [];
 
         function initCategories() {
-            let select = document.getElementById('expense-category');
-            select.innerHTML = '';
+            let box = document.getElementById('categories-box');
+            if(!box) return;
+            box.innerHTML = '';
             categories.forEach(cat => {
-                let opt = document.createElement('option');
-                opt.value = cat;
-                opt.innerText = cat;
-                select.appendChild(opt);
+                let chip = document.createElement('div');
+                chip.className = `category-chip ${selectedCategory === cat ? 'selected' : ''}`;
+                chip.innerHTML = `${cat} <span onclick="deleteCategory(event, '${cat}')">&times;</span>`;
+                chip.onclick = () => { selectedCategory = cat; initCategories(); };
+                box.appendChild(chip);
             });
         }
         initCategories();
 
-        function addCategory() {
-            let newCat = prompt("ناوی جۆری خەرجی نوێ بنووسە:");
-            if (newCat && newCat.trim() !== "") {
-                categories.push(newCat.trim());
+        window.addCategory = function() {
+            let input = document.getElementById('new-category-input');
+            let val = input.value.trim();
+            if (val && !categories.includes(val)) {
+                categories.push(val);
+                selectedCategory = val;
+                input.value = '';
                 initCategories();
             }
         }
 
-        function switchTab(tabName) {
+        window.deleteCategory = function(event, cat) {
+            event.stopPropagation();
+            if (categories.length <= 1) {
+                alert('دەبێت بە حداقل یەک جۆری خەرجی بمێنێت!');
+                return;
+            }
+            categories = categories.filter(c => c !== cat);
+            if (selectedCategory === cat) selectedCategory = categories[0];
+            initCategories();
+        }
+
+        window.switchTab = function(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-
             if (tabName === 'expenses') {
                 event.target.classList.add('active');
                 document.getElementById('expenses-section').classList.add('active');
@@ -147,7 +293,7 @@
             }
         }
 
-        function saveBudget() {
+        window.saveBudget = function() {
             let inputVal = parseFloat(document.getElementById('monthly-budget-input').value);
             if (!isNaN(inputVal)) {
                 monthlyBudgetVal = inputVal;
@@ -157,32 +303,20 @@
             }
         }
 
-        function addExpense() {
-            let category = document.getElementById('expense-category').value;
+        window.addExpense = function() {
             let title = document.getElementById('expense-title').value;
             let amount = parseFloat(document.getElementById('expense-amount').value);
 
             if (title && !isNaN(amount) && amount > 0) {
                 let now = new Date();
-                let dateStr = now.toLocaleDateString('en-GB');
-                let timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                let fullDateTime = `${dateStr} - ${timeStr}`;
+                let fullDateTime = `${now.toLocaleDateString('en-GB')} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
 
-                let expenseItem = {
-                    id: Date.now(),
-                    category,
-                    title,
-                    amount,
-                    dateTime: fullDateTime
-                };
-
-                expensesArray.push(expenseItem);
+                expensesArray.push({ id: Date.now(), category: selectedCategory, title, amount, dateTime: fullDateTime });
                 totalExpenseVal += amount;
 
                 document.getElementById('total-expense').innerText = totalExpenseVal;
                 updateRemaining();
                 renderExpenses();
-
                 document.getElementById('expense-title').value = '';
                 document.getElementById('expense-amount').value = '';
             } else {
@@ -190,7 +324,7 @@
             }
         }
 
-        function deleteExpense(id) {
+        window.deleteExpense = function(id) {
             let index = expensesArray.findIndex(item => item.id === id);
             if (index !== -1) {
                 totalExpenseVal -= expensesArray[index].amount;
