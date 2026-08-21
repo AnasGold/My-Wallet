@@ -42,7 +42,6 @@
         .dropdown-item { padding: 12px 15px; font-size: 14px; color: #f8fafc; cursor: pointer; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 10px; }
         .dropdown-item:hover { background: #1e293b; color: #38bdf8; }
 
-        /* Custom Modern Modal System */
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
         .custom-modal.active { display: flex; }
         .modal-content { background: #1e293b; border: 1px solid #475569; width: 90%; max-width: 380px; padding: 20px; border-radius: 14px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
@@ -98,7 +97,6 @@
             </div>
         </div>
 
-        <!-- Authentication Boxes -->
         <div id="login-box" class="auth-box active">
             <h2 style="text-align: center; margin-bottom: 15px; font-size: 18px; color: #94a3b8;">چوونە ژوورەوە</h2>
             <div class="form-group">
@@ -142,7 +140,6 @@
             <button class="btn btn-secondary" onclick="showBox('login-box')">پەشیمان بوویتەوە؟ چوونە ژوورەوە</button>
         </div>
 
-        <!-- Main App Box -->
         <div id="app-box" class="app-box">
             <div class="top-bar">
                 <span id="user-name-display" class="user-name-display"></span>
@@ -159,7 +156,6 @@
                 <div class="dropdown-item" style="color: #fbbf24;" onclick="logoutUser()">🚪 چوونە دەرەوە لە هەژمار</div>
             </div>
 
-            <!-- Custom Modern Modal Windows -->
             <div id="generic-modal" class="custom-modal">
                 <div class="modal-content">
                     <div id="modal-title" class="modal-header">تێبینی</div>
@@ -172,7 +168,6 @@
                 </div>
             </div>
 
-            <!-- Trash Modal -->
             <div id="trash-modal" class="custom-modal">
                 <div class="modal-content" style="max-width: 400px;">
                     <div class="modal-header">مامەڵە سڕاوەکان</div>
@@ -245,7 +240,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile, verifyBeforeUpdateEmail, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDZNuDC7hPOI6RNCfjcP-nfMN12knaSX0M",
@@ -334,7 +329,6 @@
             document.getElementById('dropdown-menu').classList.toggle('active');
         }
 
-        // Custom Modal UI Logic
         window.closeCustomModal = function() {
             document.getElementById('generic-modal').classList.remove('active');
         }
@@ -377,16 +371,28 @@
                 };
             } else if (type === 'email') {
                 title.innerText = 'گۆڕینی ئیمەیڵ';
-                sub.innerText = 'ئیمەیڵی نوێ بنووسە';
-                body.innerHTML = `<input type="email" id="modal-input-field" placeholder="example@gmail.com">`;
+                sub.innerText = 'ئیمەیڵی نوێ وە پاسۆردەکەت بنووسە';
+                body.innerHTML = `
+                    <div style="margin-bottom: 10px;"><input type="email" id="modal-input-email" placeholder="ئیمەیڵی نوێ..."></div>
+                    <div><input type="password" id="modal-input-pass" placeholder="پاسۆردی هەژمار..."></div>
+                `;
                 okBtn.innerText = 'ناردن';
                 okBtn.onclick = function() {
-                    let val = document.getElementById('modal-input-field').value;
-                    if (val && auth.currentUser) {
-                        verifyBeforeUpdateEmail(auth.currentUser, val).then(() => {
-                            closeCustomModal();
-                            showCustomAlert('سەرکەوتوو', 'لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت.');
-                        }).catch(err => showCustomAlert('هەڵە', err.message));
+                    let newEmail = document.getElementById('modal-input-email').value;
+                    let pass = document.getElementById('modal-input-pass').value;
+                    if (newEmail && pass && auth.currentUser) {
+                        let user = auth.currentUser;
+                        let cred = EmailAuthProvider.credential(user.email, pass);
+                        reauthenticateWithCredential(user, cred).then(() => {
+                            verifyBeforeUpdateEmail(user, newEmail).then(() => {
+                                closeCustomModal();
+                                showCustomAlert('سەرکەوتوو', 'لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت. دوای کرتەکردن لەسەری، ئیمەیڵەکەت دەگۆڕێت.');
+                            }).catch(err => showCustomAlert('هەڵە', err.message));
+                        }).catch(() => {
+                            showCustomAlert('هەڵە', 'پاسۆردی هەژمار هەڵەیە!');
+                        });
+                    } else {
+                        showCustomAlert('تێبینی', 'تکایە هەردوو خانەکە پڕبکەرەوە!');
                     }
                 };
             } else if (type === 'delete') {
@@ -394,18 +400,22 @@
                 sub.innerText = 'بۆ دلنیابوونەوە پاسۆردەکەت بنووسە';
                 body.innerHTML = `<input type="password" id="modal-input-field" placeholder="پاسۆردی هەژمار">`;
                 okBtn.innerText = 'سڕینەوە';
-                okBtn.onclick = function() {
+                okBtn.onclick = async function() {
                     let pass = document.getElementById('modal-input-field').value;
                     if (pass && auth.currentUser) {
                         let user = auth.currentUser;
+                        let uid = user.uid;
                         let cred = EmailAuthProvider.credential(user.email, pass);
-                        reauthenticateWithCredential(user, cred).then(() => {
-                            deleteUser(user).then(() => {
-                                closeCustomModal();
-                            }).catch(err => showCustomAlert('هەڵە', err.message));
-                        }).catch(() => {
-                            showCustomAlert('هەڵە', 'پاسۆردی هەژمار هەڵەیە!');
-                        });
+                        try {
+                            await reauthenticateWithCredential(user, cred);
+                            // سڕینەوەی داتا لە Firestore
+                            await deleteDoc(doc(db, "users", uid));
+                            // سڕینەوەی تەواوی ئەکاونتەکە لە Authentication و گەڕانەوە بۆ شاشەی چوونە ژوورەوە یان تۆمارکردنی نوێ
+                            await deleteUser(user);
+                            closeCustomModal();
+                        } catch (err) {
+                            showCustomAlert('هەڵە', 'پاسۆردەکە هەڵەیە یان کێشەیەک ڕویدا: ' + err.message);
+                        }
                     }
                 };
             }
@@ -483,7 +493,6 @@
             }
         }
 
-        // Firestore Database Sync
         window.saveUserDataToCloud = async function() {
             if (!currentUserUid) return;
             try {
