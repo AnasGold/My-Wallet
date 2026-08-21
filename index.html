@@ -27,6 +27,9 @@
         .btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
         .btn:hover { background: #059669; }
 
+        .btn-danger { background: #ef4444; padding: 6px 10px; font-size: 12px; border-radius: 6px; border: none; color: white; cursor: pointer; }
+        .btn-danger:hover { background: #dc2626; }
+
         /* Stats Cards */
         .card { background: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 4px solid #38bdf8; }
         .card h3 { font-size: 14px; color: #94a3b8; margin-bottom: 5px; }
@@ -37,7 +40,10 @@
         .history-item { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
         .item-info h4 { font-size: 15px; color: #f8fafc; margin-bottom: 3px; }
         .item-info span { font-size: 11px; color: #64748b; }
+        .item-left { display: flex; align-items: center; gap: 10px; }
         .item-price { font-weight: bold; color: #ef4444; }
+
+        .flex-row { display: flex; gap: 5px; }
     </style>
 </head>
 <body>
@@ -55,22 +61,20 @@
         <div id="expenses-section" class="section active">
             <div class="form-group">
                 <label>جۆری خەرجی (ڕۆیشتوو)</label>
-                <select id="expense-category">
-                    <option value="خواردن و خواردنەوە">خواردن و خواردنەوە</option>
-                    <option value="گواستنەوە">گواستنەوە</option>
-                    <option value="کڕینی کەلوپەل">کڕینی کەلوپەل</option>
-                    <option value="هیتر">هیتر</option>
-                </select>
+                <div class="flex-row">
+                    <select id="expense-category" style="flex: 1;"></select>
+                    <button type="button" class="btn" style="width: auto; padding: 0 15px;" onclick="addCategory()">+</button>
+                </div>
             </div>
 
             <div class="form-group">
                 <label>شتی کڕدراو (تایتڵ)</label>
-                <input type="text" id="expense-title" placeholder="بۆ نموونە: قاوە، قەمیس...">
+                <input type="text" id="expense-title" placeholder="">
             </div>
 
             <div class="form-group">
                 <label>بڕی پارە</label>
-                <input type="number" id="expense-amount" placeholder="بڕەکەی بە دینار / دۆلار">
+                <input type="number" id="expense-amount" placeholder="">
             </div>
 
             <button class="btn" onclick="addExpense()">تۆمارکردنی خەرجی</button>
@@ -92,7 +96,7 @@
 
             <div class="form-group">
                 <label>دەستکاری کردنی پارەی هەبوو (پێبوو)</label>
-                <input type="number" id="monthly-budget-input" placeholder="بڕی پارەی ئەم مانگەت بنووسە">
+                <input type="number" id="monthly-budget-input" placeholder="">
             </div>
 
             <button class="btn" onclick="saveBudget()">نوێکردنەوەی پارە</button>
@@ -105,7 +109,31 @@
     </div>
 
     <script>
-        // Tab Switching Logic
+        let categories = ["خواردن و خواردنەوە", "گواستنەوە", "کڕینی کەلوپەل", "هیتر"];
+        let totalExpenseVal = 0;
+        let monthlyBudgetVal = 0;
+        let expensesArray = [];
+
+        function initCategories() {
+            let select = document.getElementById('expense-category');
+            select.innerHTML = '';
+            categories.forEach(cat => {
+                let opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                select.appendChild(opt);
+            });
+        }
+        initCategories();
+
+        function addCategory() {
+            let newCat = prompt("ناوی جۆری خەرجی نوێ بنووسە:");
+            if (newCat && newCat.trim() !== "") {
+                categories.push(newCat.trim());
+                initCategories();
+            }
+        }
+
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
@@ -119,18 +147,13 @@
             }
         }
 
-        // Data Storage
-        let totalExpenseVal = 0;
-        let monthlyBudgetVal = 0;
-        let expensesArray = [];
-
         function saveBudget() {
             let inputVal = parseFloat(document.getElementById('monthly-budget-input').value);
             if (!isNaN(inputVal)) {
                 monthlyBudgetVal = inputVal;
                 document.getElementById('display-budget').innerText = monthlyBudgetVal;
                 updateRemaining();
-                alert('پارەی مانگانە بە سەرکەوتوویی نوێکرایەوە!');
+                alert('پارەی مانگانە نوێکرایەوە!');
             }
         }
 
@@ -140,13 +163,13 @@
             let amount = parseFloat(document.getElementById('expense-amount').value);
 
             if (title && !isNaN(amount) && amount > 0) {
-                // Get Current Date and Time
                 let now = new Date();
                 let dateStr = now.toLocaleDateString('en-GB');
                 let timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 let fullDateTime = `${dateStr} - ${timeStr}`;
 
                 let expenseItem = {
+                    id: Date.now(),
                     category,
                     title,
                     amount,
@@ -156,16 +179,25 @@
                 expensesArray.push(expenseItem);
                 totalExpenseVal += amount;
 
-                // Update UI
                 document.getElementById('total-expense').innerText = totalExpenseVal;
                 updateRemaining();
                 renderExpenses();
 
-                // Clear Inputs
                 document.getElementById('expense-title').value = '';
                 document.getElementById('expense-amount').value = '';
             } else {
-                alert('تکایە ناوی شتەکە و بڕی پارە بە ڕێکی بنووسە!');
+                alert('تکایە خانەکان بە دروستی پڕبکەرەوە!');
+            }
+        }
+
+        function deleteExpense(id) {
+            let index = expensesArray.findIndex(item => item.id === id);
+            if (index !== -1) {
+                totalExpenseVal -= expensesArray[index].amount;
+                expensesArray.splice(index, 1);
+                document.getElementById('total-expense').innerText = totalExpenseVal;
+                updateRemaining();
+                renderExpenses();
             }
         }
 
@@ -173,11 +205,7 @@
             let remaining = monthlyBudgetVal - totalExpenseVal;
             let remElem = document.getElementById('remaining-budget');
             remElem.innerText = remaining;
-            if (remaining < 0) {
-                remElem.style.color = '#ef4444';
-            } else {
-                remElem.style.color = '#10b981';
-            }
+            remElem.style.color = remaining < 0 ? '#ef4444' : '#10b981';
         }
 
         function renderExpenses() {
@@ -189,7 +217,10 @@
                             <h4>${item.title} (${item.category})</h4>
                             <span>${item.dateTime}</span>
                         </div>
-                        <div class="item-price">-${item.amount}</div>
+                        <div class="item-left">
+                            <div class="item-price">-${item.amount}</div>
+                            <button class="btn-danger" onclick="deleteExpense(${item.id})">سڕینەوە</button>
+                        </div>
                     </li>
                 `;
             });
