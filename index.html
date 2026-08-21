@@ -10,10 +10,10 @@
         .container { width: 100%; max-width: 480px; background: #1e293b; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; }
         h1 { text-align: center; margin-bottom: 20px; font-size: 22px; color: #38bdf8; }
         
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
-        input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; }
-        input:focus, select:focus { outline: none; border-color: #38bdf8; }
+        input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; }
+        input:focus { outline: none; border-color: #38bdf8; }
         
         .btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; margin-top: 5px; }
         .btn:hover { background: #059669; }
@@ -32,10 +32,20 @@
         .user-name-display { font-size: 16px; color: #fbbf24; font-weight: bold; }
         .menu-icon { font-size: 22px; cursor: pointer; color: #fbbf24; background: #0f172a; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; }
         
-        .dropdown-menu { display: none; position: absolute; top: 75px; right: 20px; background: #0f172a; border: 1px solid #475569; border-radius: 12px; width: 260px; z-index: 10; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .dropdown-menu { display: none; position: absolute; top: 75px; right: 20px; background: #0f172a; border: 1px solid #475569; border-radius: 12px; width: 260px; z-index: 20; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .dropdown-menu.active { display: block; }
         .dropdown-item { padding: 12px 15px; font-size: 14px; color: #f8fafc; cursor: pointer; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 10px; }
         .dropdown-item:hover { background: #1e293b; color: #38bdf8; }
+
+        /* Custom Select Box with Delete */
+        .custom-select-container { position: relative; }
+        .custom-select-header { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .custom-dropdown-list { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0f172a; border: 1px solid #475569; border-radius: 8px; margin-top: 5px; z-index: 10; max-height: 180px; overflow-y: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .custom-dropdown-list.active { display: block; }
+        .custom-option { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; cursor: pointer; font-size: 14px; }
+        .custom-option:hover { background: #1e293b; }
+        .option-delete { color: #ef4444; font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 16px; }
+        .option-delete:hover { background: rgba(239, 68, 68, 0.2); }
 
         /* Tabs & Categories */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -138,7 +148,12 @@
                 <div class="form-group">
                     <label>جۆری خەرجی (ڕۆیشتوو)</label>
                     <div class="select-row">
-                        <select id="category-select"></select>
+                        <div class="custom-select-container" style="flex: 1;">
+                            <div class="custom-select-header" onclick="toggleCustomDropdown()" id="selected-category-text">
+                                خواردن و خواردنەوە <span>▼</span>
+                            </div>
+                            <div class="custom-dropdown-list" id="custom-dropdown-list"></div>
+                        </div>
                         <button type="button" class="add-category-btn" onclick="promptAddCategory()">+</button>
                     </div>
                 </div>
@@ -224,8 +239,9 @@
             createUserWithEmailAndPassword(auth, email, pass)
                 .then((userCredential) => {
                     let defaultName = email.split('@')[0];
-                    updateProfile(userCredential.user, { displayName: defaultName });
-                    alert('ئەکاونتەکەت بە سەرکەوتوویی دروست بوو!');
+                    updateProfile(userCredential.user, { displayName: defaultName }).then(() => {
+                        alert('ئەکاونتەکەت بە سەرکەوتوویی دروست بوو!');
+                    });
                 })
                 .catch((error) => {
                     alert('هەڵە ڕویدا: ' + error.message);
@@ -255,7 +271,7 @@
             }
             sendPasswordResetEmail(auth, email)
                 .then(() => {
-                    alert('تکایە ڤێریفای بۆ ئیمەیڵەکەت چووەتەوە، بەشی Spam لەبیر مەکە!');
+                    alert('لینکی گۆڕینەوەی پاسۆرد نێردرا بۆ ئیمەیڵەکەت. تکایە بەشی Spamـیش بپشکنە.');
                     showBox('login-box');
                 })
                 .catch((error) => {
@@ -283,7 +299,7 @@
             let newEmail = prompt('ئیمەیڵی نوێ بنووسە:');
             if (newEmail && auth.currentUser) {
                 verifyBeforeUpdateEmail(auth.currentUser, newEmail).then(() => {
-                    alert('لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت. تکایە بەشی Spamـیش بپشکنە.');
+                    alert('لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت. تکایە پێش چونە دەرەوە ڤێریفای بکە.');
                 }).catch(err => alert(err.message));
             }
         }
@@ -339,19 +355,42 @@
 
     <script>
         let categories = ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
+        let selectedCategory = "خواردن و خواردنەوە";
 
         function initCategories() {
-            let select = document.getElementById('category-select');
-            if(!select) return;
-            select.innerHTML = '';
+            let list = document.getElementById('custom-dropdown-list');
+            let headerText = document.getElementById('selected-category-text');
+            if(!list) return;
+            
+            list.innerHTML = '';
+            if (!categories.includes(selectedCategory) && categories.length > 0) {
+                selectedCategory = categories[0];
+            }
+            
+            if(categories.length > 0) {
+                headerText.innerHTML = `${selectedCategory} <span>▼</span>`;
+            } else {
+                headerText.innerHTML = `هیچ جۆرێک نییە <span>▼</span>`;
+            }
+
             categories.forEach(cat => {
-                let opt = document.createElement('option');
-                opt.value = cat;
-                opt.innerText = cat;
-                select.appendChild(opt);
+                let option = document.createElement('div');
+                option.className = 'custom-option';
+                option.innerHTML = `<span>${cat}</span> <span class="option-delete" onclick="deleteCategory(event, '${cat}')">&times;</span>`;
+                option.onclick = (e) => {
+                    if(e.target.classList.contains('option-delete')) return;
+                    selectedCategory = cat;
+                    headerText.innerHTML = `${cat} <span>▼</span>`;
+                    list.classList.remove('active');
+                };
+                list.appendChild(option);
             });
         }
         initCategories();
+
+        window.toggleCustomDropdown = function() {
+            document.getElementById('custom-dropdown-list').classList.toggle('active');
+        }
 
         window.promptAddCategory = function() {
             let newCat = prompt('ناوی جۆری نوێی خەرجی بنووسە:');
@@ -359,12 +398,25 @@
                 let formatted = newCat.trim();
                 if (!categories.includes(formatted)) {
                     categories.push(formatted);
+                    selectedCategory = formatted;
                     initCategories();
-                    document.getElementById('category-select').value = formatted;
                 } else {
                     alert('ئەم جۆرە پێشتر هەیە!');
                 }
             }
+        }
+
+        window.deleteCategory = function(event, cat) {
+            event.stopPropagation();
+            if (categories.length <= 1) {
+                alert('دەبێت لانیکەم یەک جۆری خەرجی بمێنێت!');
+                return;
+            }
+            categories = categories.filter(c => c !== cat);
+            if (selectedCategory === cat) {
+                selectedCategory = categories[0];
+            }
+            initCategories();
         }
 
         let totalExpenseVal = 0;
@@ -394,15 +446,14 @@
         }
 
         window.addExpense = function() {
-            let category = document.getElementById('category-select').value;
             let title = document.getElementById('expense-title').value;
             let amount = parseFloat(document.getElementById('expense-amount').value);
 
-            if (title && !isNaN(amount) && amount > 0) {
+            if (title && !isNaN(amount) && amount > 0 && categories.length > 0) {
                 let now = new Date();
                 let fullDateTime = `${now.toLocaleDateString('en-GB')} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
 
-                expensesArray.push({ id: Date.now(), category, title, amount, dateTime: fullDateTime });
+                expensesArray.push({ id: Date.now(), category: selectedCategory, title, amount, dateTime: fullDateTime });
                 totalExpenseVal += amount;
 
                 document.getElementById('total-expense').innerText = totalExpenseVal;
@@ -411,7 +462,7 @@
                 document.getElementById('expense-title').value = '';
                 document.getElementById('expense-amount').value = '';
             } else {
-                alert('تکایە خانەکان بە دروستی پڕبکەرەوە!');
+                alert('تکایە خانەکان بە دروستی پڕبکەرەوە یان جۆری خەرجی هەڵبژێرە!');
             }
         }
 
@@ -461,3 +512,4 @@
     </script>
 </body>
 </html>
+v
