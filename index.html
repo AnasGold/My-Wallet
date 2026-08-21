@@ -49,6 +49,7 @@
         .modal-sub { font-size: 12px; color: #94a3b8; text-align: center; margin-bottom: 15px; }
         .modal-body { max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
         .trash-row { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #ef4444; font-size: 13px; color: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+        .trash-actions { display: flex; gap: 5px; }
         .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
         .modal-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .modal-btn-confirm { background: #10b981; color: white; }
@@ -262,6 +263,11 @@
         window.expensesArray = [];
         window.trashArray = [];
 
+        window.formatNumber = function(num) {
+            if (isNaN(num)) return "0";
+            return num.toLocaleString('en-US');
+        };
+
         window.showBox = function(boxId) {
             document.querySelectorAll('.auth-box').forEach(b => b.classList.remove('active'));
             document.getElementById(boxId).classList.add('active');
@@ -466,6 +472,15 @@
             }
         }
 
+        window.permDeleteExpense = function(id) {
+            let index = window.trashArray.findIndex(item => item.id === id);
+            if (index !== -1) {
+                window.trashArray.splice(index, 1);
+                saveUserDataToCloud();
+                renderTrashList();
+            }
+        }
+
         function renderTrashList() {
             let trashBody = document.getElementById('trash-body');
             trashBody.innerHTML = '';
@@ -476,10 +491,13 @@
                     trashBody.innerHTML += `
                         <div class="trash-row">
                             <div>
-                                <b>${item.title}</b>: -${item.amount}<br>
+                                <b>${item.title}</b>: -${window.formatNumber(item.amount)}<br>
                                 <span style="color: #94a3b8; font-size: 10px;">${item.dateTime}</span>
                             </div>
-                            <button class="btn-restore" onclick="restoreExpense(${item.id})">گەڕانەوە</button>
+                            <div class="trash-actions">
+                                <button class="btn-restore" onclick="restoreExpense(${item.id})">گەڕانەوە</button>
+                                <button class="btn-danger" onclick="permDeleteExpense(${item.id})">سڕینەوە</button>
+                            </div>
                         </div>
                     `;
                 });
@@ -528,7 +546,6 @@
             }
         }
 
-        // ئەمە بە تەواوی چاوەڕێی فایربەیس دەکات داتاکانی سەر ئیمەیڵ بهێنێت پاشان نیشانی دەدات
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserUid = user.uid;
@@ -558,9 +575,7 @@
                 showBox('login-box');
             });
         }
-    </script>
 
-    <script>
         window.initCategories = function() {
             let list = document.getElementById('custom-dropdown-list');
             let headerText = document.getElementById('selected-category-text');
@@ -664,13 +679,13 @@
 
         window.renderAll = function() {
             let totalExpenseVal = window.expensesArray.reduce((sum, item) => sum + item.amount, 0);
-            document.getElementById('total-expense').innerText = totalExpenseVal;
-            document.getElementById('display-budget').innerText = window.monthlyBudgetVal;
+            document.getElementById('total-expense').innerText = window.formatNumber(totalExpenseVal);
+            document.getElementById('display-budget').innerText = window.formatNumber(window.monthlyBudgetVal);
             document.getElementById('monthly-budget-input').value = window.monthlyBudgetVal || '';
 
             let remaining = window.monthlyBudgetVal - totalExpenseVal;
             let remElem = document.getElementById('remaining-budget');
-            remElem.innerText = remaining;
+            remElem.innerText = window.formatNumber(remaining);
             remElem.style.color = remaining < 0 ? '#ef4444' : '#10b981';
 
             let listHTML = '';
@@ -682,7 +697,7 @@
                             <span>${item.dateTime}</span>
                         </div>
                         <div class="item-left">
-                            <div class="item-price">-${item.amount}</div>
+                            <div class="item-price">-${window.formatNumber(item.amount)}</div>
                             <button class="btn-danger" onclick="deleteExpense(${item.id})">سڕینەوە</button>
                         </div>
                     </li>
