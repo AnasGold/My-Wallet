@@ -410,11 +410,8 @@
                         let uid = user.uid;
                         let cred = EmailAuthProvider.credential(user.email, pass);
                         try {
-                            // سەرەتا دڵنیایی و Re-auth دەکرێت
                             await reauthenticateWithCredential(user, cred);
-                            // سڕینەوەی داتاکان لە فاایەربەیس Firestore
                             await deleteDoc(doc(db, "users", uid));
-                            // سڕینەوەی تەواوی ئەکاونت لە Authentication
                             await deleteUser(user);
                             closeCustomModal();
                             showCustomAlert('سەرکەوتوو', 'هژمارەکەت بە تەواوی لە فایربەیس سڕایەوە.');
@@ -503,14 +500,20 @@
 
         window.saveUserDataToCloud = async function() {
             if (!currentUserUid || !isDataLoaded) return;
+            
+            let dataToSave = {
+                categories: window.categories,
+                selectedCategory: window.selectedCategory,
+                monthlyBudgetVal: window.monthlyBudgetVal,
+                expensesArray: window.expensesArray,
+                trashArray: window.trashArray
+            };
+
+            // پاشەکەوتکردن لە ناوخۆی مۆبایل (Local) بۆ ئەوەی لە کاتی ڕیفرێشدا نەفەوتێت
+            localStorage.setItem('wallet_data_' + currentUserUid, JSON.stringify(dataToSave));
+
             try {
-                await setDoc(doc(db, "users", currentUserUid), {
-                    categories: window.categories,
-                    selectedCategory: window.selectedCategory,
-                    monthlyBudgetVal: window.monthlyBudgetVal,
-                    expensesArray: window.expensesArray,
-                    trashArray: window.trashArray
-                }, { merge: true });
+                await setDoc(doc(db, "users", currentUserUid), dataToSave, { merge: true });
             } catch(e) {
                 console.error("Error saving data: ", e);
             }
@@ -518,6 +521,21 @@
 
         async function loadUserDataFromCloud(uid) {
             isDataLoaded = false;
+            
+            // سەرەتا لە localStorage وەردەگرین بۆ خێرایی و پاراستن لە ڕیفرێشدا
+            let localData = localStorage.getItem('wallet_data_' + uid);
+            if (localData) {
+                let parsed = JSON.parse(localData);
+                window.categories = parsed.categories || ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
+                window.selectedCategory = parsed.selectedCategory || window.categories[0];
+                window.monthlyBudgetVal = parsed.monthlyBudgetVal || 0;
+                window.expensesArray = parsed.expensesArray || [];
+                window.trashArray = parsed.trashArray || [];
+                isDataLoaded = true;
+                initCategories();
+                renderAll();
+            }
+
             try {
                 let docRef = doc(db, "users", uid);
                 let docSnap = await getDoc(docRef);
@@ -528,14 +546,21 @@
                     window.monthlyBudgetVal = data.monthlyBudgetVal || 0;
                     window.expensesArray = data.expensesArray || [];
                     window.trashArray = data.trashArray || [];
-                } else {
+                } else if (!localData) {
                     window.categories = ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
                     window.selectedCategory = "خواردن و خواردنەوە";
                     window.monthlyBudgetVal = 0;
                     window.expensesArray = [];
                     window.trashArray = [];
                 }
-                isDataLoaded = true; // لێرەدا قفڵەکە دەکرێتەوە بۆ ڕێگەدان بە پاشەکەوتکردن
+                isDataLoaded = true;
+                localStorage.setItem('wallet_data_' + uid, JSON.stringify({
+                    categories: window.categories,
+                    selectedCategory: window.selectedCategory,
+                    monthlyBudgetVal: window.monthlyBudgetVal,
+                    expensesArray: window.expensesArray,
+                    trashArray: window.trashArray
+                }));
                 initCategories();
                 renderAll();
             } catch(e) {
