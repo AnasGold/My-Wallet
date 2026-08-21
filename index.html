@@ -256,6 +256,7 @@
         const db = getFirestore(app);
 
         let currentUserUid = null;
+        let isDataLoaded = false;
         window.categories = ["خواردن و خواردنەوە", "گواستنەوە", "کەلوپەل", "هیتر"];
         window.selectedCategory = "خواردن و خواردنەوە";
         window.monthlyBudgetVal = 0;
@@ -413,7 +414,7 @@
                             await deleteDoc(doc(db, "users", uid));
                             await deleteUser(user);
                             closeCustomModal();
-                            await signOut(auth);
+                            window.location.reload();
                         } catch (err) {
                             showCustomAlert('هەڵە', 'پاسۆردەکە هەڵەیە یان کێشەیەک ڕویدا: ' + err.message);
                         }
@@ -497,7 +498,7 @@
         }
 
         window.saveUserDataToCloud = async function() {
-            if (!currentUserUid) return;
+            if (!currentUserUid || !isDataLoaded) return;
             try {
                 await setDoc(doc(db, "users", currentUserUid), {
                     categories: window.categories,
@@ -512,6 +513,7 @@
         }
 
         async function loadUserDataFromCloud(uid) {
+            isDataLoaded = false;
             try {
                 let docRef = doc(db, "users", uid);
                 let docSnap = await getDoc(docRef);
@@ -528,12 +530,15 @@
                     window.monthlyBudgetVal = 0;
                     window.expensesArray = [];
                     window.trashArray = [];
+                    isDataLoaded = true;
                     await saveUserDataToCloud();
                 }
+                isDataLoaded = true;
                 initCategories();
                 renderAll();
             } catch(e) {
                 console.error("Error loading data: ", e);
+                isDataLoaded = true;
             }
         }
 
@@ -549,6 +554,7 @@
                 await loadUserDataFromCloud(user.uid);
             } else {
                 currentUserUid = null;
+                isDataLoaded = false;
                 window.expensesArray = [];
                 window.trashArray = [];
                 window.monthlyBudgetVal = 0;
