@@ -302,14 +302,14 @@
             let email = document.getElementById('login-email').value;
             let pass = document.getElementById('login-password').value;
             
+            if(!email || !pass) {
+                showCustomAlert('هەڵە', 'تکایە ئیمەیڵ و پاسۆرد بنووسە!');
+                return;
+            }
+
             signInWithEmailAndPassword(auth, email, pass)
                 .catch((error) => {
-                    // پشکنین بۆ ئەوەی ئەگەر ئیمەیڵەکە بوونی نەبوو یان هەڵە بوو
-                    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
-                        showCustomAlert('هەڵە', 'تکایە هیچ ئەکاونتێک لەسەر ئەم ئیمەیڵە بوونی نیە تکایە ئەکاونت دروستبکە');
-                    } else {
-                        showCustomAlert('هەڵە', 'تکایە دڵنیابەوە لە دروستی ئیمەیڵ و پاسۆردەکەت.');
-                    }
+                    showCustomAlert('هەڵە', 'هیچ ئەکاونتێک لەسەر ئەم ئیمەیڵە بوونی نییە، تکایە ئەکاونت دروستبکە');
                 });
         }
 
@@ -320,6 +320,7 @@
             signOut(auth);
         }
 
+        // ناردنی ڤێریفای پاسۆرد لەگەڵ ئاگادارکردنەوەی بەشی Spam و پاشان گەڕانەوە بۆ لاگین
         window.sendResetEmail = function() {
             let email = document.getElementById('forgot-email').value;
             if (!email) {
@@ -328,10 +329,13 @@
             }
             sendPasswordResetEmail(auth, email)
                 .then(() => {
-                    showCustomAlert('سەرکەوتوو', 'لینکی گۆڕینەوەی پاسۆرد نێردرا بۆ ئیمەیڵەکەت.');
+                    document.getElementById('forgot-email').value = '';
+                    showCustomAlert('سەرکەوتوو', 'ڤێریفای (لینکی گۆڕینەوەی پاسۆرد) نێردرا بۆ ئیمەیڵەکەت، تکایە بەشی Spam-یش بیر نەچێت.');
                     showBox('login-box');
                 })
-                .catch((error) => { showCustomAlert('هەڵە', error.message); });
+                .catch((error) => { 
+                    showCustomAlert('هەڵە', 'هیچ ئەکاونتێک بەم ئیمەیڵە بوونی نییە!'); 
+                });
         }
 
         window.toggleMenu = function() {
@@ -345,7 +349,7 @@
         window.showCustomAlert = function(title, message) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-subtitle').innerText = '';
-            document.getElementById('modal-body-content').innerHTML = `<div style="text-align: center; font-size: 14px; color: #f8fafc; padding: 10px;">${message}</div>`;
+            document.getElementById('modal-body-content').innerHTML = `<div style="text-align: center; font-size: 14px; color: #f8fafc; padding: 10px; line-height: 1.6;">${message}</div>`;
             document.getElementById('modal-cancel-btn').style.display = 'none';
             let okBtn = document.getElementById('modal-ok-btn');
             okBtn.innerText = 'باشە';
