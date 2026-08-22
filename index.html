@@ -240,7 +240,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile, verifyBeforeUpdateEmail, deleteUser, EmailAuthProvider, reauthenticateWithCredential, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile, verifyBeforeUpdateEmail, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -279,9 +279,14 @@
         }
 
         window.registerUser = function() {
-            let email = document.getElementById('reg-email').value;
+            let email = document.getElementById('reg-email').value.trim();
             let pass = document.getElementById('reg-password').value;
             let confirmPass = document.getElementById('reg-password-confirm').value;
+
+            if (!email || !pass) {
+                showCustomAlert('تێبینی', 'تکایە خانەکان بە دروستی پڕبکەرەوە!');
+                return;
+            }
 
             if (pass !== confirmPass) {
                 showCustomAlert('هەڵە', 'پاسۆردەکان یەکناگرنەوە!');
@@ -295,10 +300,20 @@
                         showCustomAlert('سەرکەوتوو', 'ئەکاونتەکەت بە سەرکەوتوویی دروست بوو!');
                     });
                 })
-                .catch((error) => { showCustomAlert('هەڵە', error.message); });
+                .catch((error) => {
+                    let msg = error.message;
+                    if (error.code === 'auth/email-already-in-use') {
+                        msg = 'ئەم ئیمەیڵە پێشتر بەکارهاتووە بۆ ئەکاونتێکی تر!';
+                    } else if (error.code === 'auth/invalid-email') {
+                        msg = 'شێوازی ئیمەیڵەکە هەڵەیە!';
+                    } else if (error.code === 'auth/weak-password') {
+                        msg = 'پاسۆرد دەبێت لانیکەم ٦ پیت یان ژمارە بێت!';
+                    }
+                    showCustomAlert('هەڵە', msg);
+                });
         }
 
-        // چارەسەرکراو: پشکنینی ڕاستەقینە و یەکسەری بۆ بوونی ئیمەیڵ و هەڵەی پاسۆرد
+        // چارەسەری ڕاستەقینە بۆ چوونە ژوورەوە بە پشتبەستن بە کۆدی هەڵەی فایەربەیس
         window.loginUser = async function() {
             let email = document.getElementById('login-email').value.trim();
             let pass = document.getElementById('login-password').value;
@@ -309,18 +324,22 @@
             }
 
             try {
-                // سەرەتا پشکنین دەکەین ئایا ئیمەیڵەکە بوونی هەیە یان نە
-                const methods = await fetchSignInMethodsForEmail(auth, email);
-                if (methods.length === 0) {
-                    showCustomAlert('ئاگاداری', 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە.');
-                    return;
-                }
-
-                // ئەگەر ئیمەیڵەکە هەبوو، هەوڵی چوونەژوورەوە دەدەین
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                // ئەگەر گەیشتە لێرە واتە ئیمەیڵەکە هەبووە بەڵام پاسۆردەکەی هەڵە بووە
-                showCustomAlert('هەڵە', 'پاسۆردت هەڵەیە.');
+                let errorCode = error.code;
+                let errorMsg = 'هەڵەیەک ڕویدا، دڵنیابە لە زانیارییەکانت.';
+
+                if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
+                    // فایەربەیس لە ڤێرشنە نوێیەکاندا هەردوو حاڵەتی (ئیمەیڵی هەڵە یان پاسۆردی هەڵە) تێکەڵ دەکات بە auth/invalid-credential
+                    // بۆیە ڕاستەوخۆ دەڵێین یان ئیمەیڵەکە بوونی نییە یان پاسۆردەکەی هەڵەیە
+                    errorMsg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە، یان پاسۆردەکەت هەڵەیە.';
+                } else if (errorCode === 'auth/invalid-email') {
+                    errorMsg = 'شێوازی ئیمەیڵەکە هەڵەیە.';
+                } else if (errorCode === 'auth/too-many-requests') {
+                    errorMsg = 'چەندین جار هەڵە تاقیکراوەتەوە، تکایە کەمێک پشوو بدە و دووبارە هەوڵ بدەرەوە.';
+                }
+
+                showCustomAlert('ئاگاداری', errorMsg);
             }
         }
 
@@ -331,7 +350,7 @@
             signOut(auth);
         }
 
-        // چارەسەرکراو: ناردنی ڤێریفای و نیشاندانی یەکسەری ئاگاداریەکەی
+        // چارەسەری ناردنی ئیمەیڵی گۆڕینەوەی پاسۆرد
         window.sendResetEmail = async function() {
             let email = document.getElementById('forgot-email').value.trim();
             if (!email) {
@@ -340,17 +359,20 @@
             }
 
             try {
-                const methods = await fetchSignInMethodsForEmail(auth, email);
-                if (methods.length === 0) {
-                    showCustomAlert('ئاگاداری', 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە.');
-                    return;
-                }
-
                 await sendPasswordResetEmail(auth, email);
                 showCustomAlert('سەرکەوتوو', 'ڤێریفای چووەتەوە بۆ ئیمەیڵ لەبەشی spam تکایە بیپشکنە');
                 showBox('login-box');
             } catch (error) {
-                showCustomAlert('هەڵە', error.message);
+                let msg = 'هەڵەیەک ڕویدا.';
+                if (error.code === 'auth/user-not-found') {
+                    msg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە.';
+                } else if (error.code === 'auth/invalid-email') {
+                    msg = 'شێوازی ئیمەیڵەکە هەڵەیە.';
+                } else {
+                    // بۆ ئەوەی دڵنیابین ئەگەر فایەربەیس باسی نەبوونی ئیمەیڵیش نەکرد، پەیامی سپام بنێرین یان پەیامی دروستکردنی ئەکاونت
+                    msg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە (یان ئیمەیڵەکەت بپشکنە).';
+                }
+                showCustomAlert('ئاگاداری', msg);
             }
         }
 
