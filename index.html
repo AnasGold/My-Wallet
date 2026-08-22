@@ -17,9 +17,13 @@
 
         .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
-        input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; }
+        .input-wrapper { position: relative; width: 100%; }
+        input { width: 100%; padding: 12px; padding-left: 40px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-size: 14px; }
         input:focus { outline: none; border-color: #38bdf8; }
         
+        .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; font-size: 16px; user-select: none; }
+        .toggle-password:hover { color: #38bdf8; }
+
         .btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; margin-top: 5px; }
         .btn:hover { background: #059669; }
         .btn-secondary { background: #334155; margin-top: 10px; }
@@ -106,7 +110,10 @@
             </div>
             <div class="form-group">
                 <label>پاسۆرد</label>
-                <input type="password" id="login-password">
+                <div class="input-wrapper">
+                    <input type="password" id="login-password">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('login-password', this)">👁️</span>
+                </div>
             </div>
             <button class="btn" onclick="loginUser()">چوونە ژوورەوە</button>
             <button class="btn btn-secondary" onclick="showBox('register-box')">ئەکاونتت نییە؟ دروستی بکە</button>
@@ -119,7 +126,7 @@
                 <label>ئیمەیڵی خۆت بنووسە</label>
                 <input type="email" id="forgot-email" placeholder="example@gmail.com">
             </div>
-            <button class="btn" onclick="sendResetEmail()">ناردنی ڤێریفای بۆ ئیمەیڵ</button>
+            <button class="btn" onclick="sendResetEmail()">ناردنی لینک بۆ ئیمەیڵ</button>
             <button class="btn btn-secondary" onclick="showBox('login-box')">گەڕانەوە بۆ چوونە ژوورەوە</button>
         </div>
 
@@ -131,11 +138,17 @@
             </div>
             <div class="form-group">
                 <label>پاسۆرد</label>
-                <input type="password" id="reg-password">
+                <div class="input-wrapper">
+                    <input type="password" id="reg-password">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('reg-password', this)">👁️</span>
+                </div>
             </div>
             <div class="form-group">
                 <label>دووبارەکردنەوەی پاسۆرد</label>
-                <input type="password" id="reg-password-confirm">
+                <div class="input-wrapper">
+                    <input type="password" id="reg-password-confirm">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('reg-password-confirm', this)">👁️</span>
+                </div>
             </div>
             <button class="btn" onclick="registerUser()">دروستکردنی ئەکاونت</button>
             <button class="btn btn-secondary" onclick="showBox('login-box')">پەشیمان بوویتەوە؟ چوونە ژوورەوە</button>
@@ -263,6 +276,18 @@
         window.expensesArray = [];
         window.trashArray = [];
 
+        // کارپێکردنی دوگمەی چاو بۆ پیشاندان و شاردنەوەی پاسۆرد
+        window.togglePasswordVisibility = function(fieldId, iconElement) {
+            let inputField = document.getElementById(fieldId);
+            if (inputField.type === "password") {
+                inputField.type = "text";
+                iconElement.innerText = "🙈";
+            } else {
+                inputField.type = "password";
+                iconElement.innerText = "👁️";
+            }
+        };
+
         window.formatNumber = function(num) {
             if (isNaN(num)) return "0";
             return num.toLocaleString('en-US');
@@ -313,7 +338,7 @@
                 });
         }
 
-        // چارەسەری ڕاستەقینە بۆ چوونە ژوورەوە بە پشتبەستن بە کۆدی هەڵەی فایەربەیس
+        // پشکنینی دروستی چوونەژوورەوە و نیشاندانی هەڵەی ڕوون
         window.loginUser = async function() {
             let email = document.getElementById('login-email').value.trim();
             let pass = document.getElementById('login-password').value;
@@ -327,13 +352,9 @@
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
                 let errorCode = error.code;
-                let errorMsg = 'هەڵەیەک ڕویدا، دڵنیابە لە زانیارییەکانت.';
+                let errorMsg = 'هیچ ئەکاونتێک لەسەر ئەم ئیمەیڵە نییە، یان پاسۆردەکەت هەڵەیە.';
 
-                if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
-                    // فایەربەیس لە ڤێرشنە نوێیەکاندا هەردوو حاڵەتی (ئیمەیڵی هەڵە یان پاسۆردی هەڵە) تێکەڵ دەکات بە auth/invalid-credential
-                    // بۆیە ڕاستەوخۆ دەڵێین یان ئیمەیڵەکە بوونی نییە یان پاسۆردەکەی هەڵەیە
-                    errorMsg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە، یان پاسۆردەکەت هەڵەیە.';
-                } else if (errorCode === 'auth/invalid-email') {
+                if (errorCode === 'auth/invalid-email') {
                     errorMsg = 'شێوازی ئیمەیڵەکە هەڵەیە.';
                 } else if (errorCode === 'auth/too-many-requests') {
                     errorMsg = 'چەندین جار هەڵە تاقیکراوەتەوە، تکایە کەمێک پشوو بدە و دووبارە هەوڵ بدەرەوە.';
@@ -350,7 +371,7 @@
             signOut(auth);
         }
 
-        // چارەسەری ناردنی ئیمەیڵی گۆڕینەوەی پاسۆرد
+        // ناردنی ئیمەیڵی گۆڕینەوەی پاسۆرد و ئاگاداریەک بۆ سپام
         window.sendResetEmail = async function() {
             let email = document.getElementById('forgot-email').value.trim();
             if (!email) {
@@ -360,17 +381,12 @@
 
             try {
                 await sendPasswordResetEmail(auth, email);
-                showCustomAlert('سەرکەوتوو', 'ڤێریفای چووەتەوە بۆ ئیمەیڵ لەبەشی spam تکایە بیپشکنە');
+                showCustomAlert('سەرکەوتوو', 'لینکێکی دەستکاریکردنی پاسۆرد نێردرا بۆ ئیمێڵەکەت تکایە بەشی Spam بپشکنە.');
                 showBox('login-box');
             } catch (error) {
-                let msg = 'هەڵەیەک ڕویدا.';
-                if (error.code === 'auth/user-not-found') {
-                    msg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە.';
-                } else if (error.code === 'auth/invalid-email') {
+                let msg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە، تکایە دروستی بکە.';
+                if (error.code === 'auth/invalid-email') {
                     msg = 'شێوازی ئیمەیڵەکە هەڵەیە.';
-                } else {
-                    // بۆ ئەوەی دڵنیابین ئەگەر فایەربەیس باسی نەبوونی ئیمەیڵیش نەکرد، پەیامی سپام بنێرین یان پەیامی دروستکردنی ئەکاونت
-                    msg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە (یان ئیمەیڵەکەت بپشکنە).';
                 }
                 showCustomAlert('ئاگاداری', msg);
             }
@@ -425,7 +441,9 @@
                 sub.innerText = 'ئیمەیڵی نوێ وە پاسۆردەکەت بنووسە';
                 body.innerHTML = `
                     <div style="margin-bottom: 10px;"><input type="email" id="modal-input-email" placeholder="ئیمەیڵی نوێ..."></div>
-                    <div><input type="password" id="modal-input-pass" placeholder="پاسۆردی هەژمار..."></div>
+                    <div style="position: relative;">
+                        <input type="password" id="modal-input-pass" placeholder="پاسۆردی هەژمار...">
+                    </div>
                 `;
                 okBtn.innerText = 'ناردن';
                 okBtn.onclick = function() {
