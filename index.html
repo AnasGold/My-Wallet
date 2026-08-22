@@ -240,7 +240,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile, verifyBeforeUpdateEmail, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile, verifyBeforeUpdateEmail, deleteUser, EmailAuthProvider, reauthenticateWithCredential, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -298,8 +298,9 @@
                 .catch((error) => { showCustomAlert('هەڵە', error.message); });
         }
 
-        window.loginUser = function() {
-            let email = document.getElementById('login-email').value;
+        // چارەسەرکراو: پشکنینی ڕاستەقینە و یەکسەری بۆ بوونی ئیمەیڵ و هەڵەی پاسۆرد
+        window.loginUser = async function() {
+            let email = document.getElementById('login-email').value.trim();
             let pass = document.getElementById('login-password').value;
             
             if (!email || !pass) {
@@ -307,25 +308,20 @@
                 return;
             }
 
-            signInWithEmailAndPassword(auth, email, pass)
-                .catch((error) => {
-                    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-                        // لێرەدا دەستنیشانی دەکەین ئایا ئیمەیڵەکە بوونی نییە یان پاسۆرد هەڵەیە
-                        // لە ڤێرژنە نوێیەکانی فایەربەیسدا هەندێک جار invalid-credential بۆ هەردوکیان دەگەڕێتەوە، 
-                        // بەڵام ئێمە پەیامە گونجاوەکە دەردەخەین
-                    }
-                    
-                    if (error.code === 'auth/user-not-found') {
-                        showCustomAlert('ئاگاداری', 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە.');
-                    } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                        // بە پیێ داواکاریەکەت، دەتوانین بڵێین پاسۆردەکەت هەڵەیە یان ئەکاونت نییە
-                        showCustomAlert('هەڵە', 'پاسۆردت هەڵەیە یان هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە.');
-                    } else if (error.code === 'auth/invalid-email') {
-                        showCustomAlert('هەڵە', 'شێوازی ئیمەیڵەکە هەڵەیە.');
-                    } else {
-                        showCustomAlert('ئاگاداری', 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە یان پاسۆردت هەڵەیە.');
-                    }
-                });
+            try {
+                // سەرەتا پشکنین دەکەین ئایا ئیمەیڵەکە بوونی هەیە یان نە
+                const methods = await fetchSignInMethodsForEmail(auth, email);
+                if (methods.length === 0) {
+                    showCustomAlert('ئاگاداری', 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە.');
+                    return;
+                }
+
+                // ئەگەر ئیمەیڵەکە هەبوو، هەوڵی چوونەژوورەوە دەدەین
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                // ئەگەر گەیشتە لێرە واتە ئیمەیڵەکە هەبووە بەڵام پاسۆردەکەی هەڵە بووە
+                showCustomAlert('هەڵە', 'پاسۆردت هەڵەیە.');
+            }
         }
 
         window.logoutUser = function() {
@@ -335,24 +331,27 @@
             signOut(auth);
         }
 
-        window.sendResetEmail = function() {
-            let email = document.getElementById('forgot-email').value;
+        // چارەسەرکراو: ناردنی ڤێریفای و نیشاندانی یەکسەری ئاگاداریەکەی
+        window.sendResetEmail = async function() {
+            let email = document.getElementById('forgot-email').value.trim();
             if (!email) {
                 showCustomAlert('تێبینی', 'تکایە ئیمەیڵەکەت بنووسە!');
                 return;
             }
-            sendPasswordResetEmail(auth, email)
-                .then(() => {
-                    showCustomAlert('سەرکەوتوو', 'ڤێریفای چووەتەوە بۆ ئیمەیڵ لەبەشی spam تکایە بیپشکنە');
-                    showBox('login-box');
-                })
-                .catch((error) => { 
-                    if (error.code === 'auth/user-not-found') {
-                        showCustomAlert('ئاگاداری', 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە.');
-                    } else {
-                        showCustomAlert('هەڵە', error.message); 
-                    }
-                });
+
+            try {
+                const methods = await fetchSignInMethodsForEmail(auth, email);
+                if (methods.length === 0) {
+                    showCustomAlert('ئاگاداری', 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە.');
+                    return;
+                }
+
+                await sendPasswordResetEmail(auth, email);
+                showCustomAlert('سەرکەوتوو', 'ڤێریفای چووەتەوە بۆ ئیمەیڵ لەبەشی spam تکایە بیپشکنە');
+                showBox('login-box');
+            } catch (error) {
+                showCustomAlert('هەڵە', error.message);
+            }
         }
 
         window.toggleMenu = function() {
