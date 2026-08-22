@@ -44,7 +44,8 @@
 
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
         .custom-modal.active { display: flex; }
-        .modal-content { background: #1e293b; border: 1px solid #475569; width: 90%; max-width: 380px; padding: 20px; border-radius: 14px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }.modal-header { font-size: 16px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; text-align: center; }
+        .modal-content { background: #1e293b; border: 1px solid #475569; width: 90%; max-width: 380px; padding: 20px; border-radius: 14px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+        .modal-header { font-size: 16px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; text-align: center; }
         .modal-sub { font-size: 12px; color: #94a3b8; text-align: center; margin-bottom: 15px; }
         .modal-body { max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
         .trash-row { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #ef4444; font-size: 13px; color: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
@@ -95,7 +96,9 @@
                 <span class="logo-emoji">💼</span>
                 <h1>my wallet</h1>
             </div>
-        </div><div id="login-box" class="auth-box active">
+        </div>
+
+        <div id="login-box" class="auth-box active">
             <h2 style="text-align: center; margin-bottom: 15px; font-size: 18px; color: #94a3b8;">چوونە ژوورەوە</h2>
             <div class="form-group">
                 <label>ئیمەیڵ</label>
@@ -164,7 +167,9 @@
                         <button id="modal-ok-btn" class="modal-btn modal-btn-confirm">تۆمارکردن</button>
                     </div>
                 </div>
-            </div><div id="trash-modal" class="custom-modal">
+            </div>
+
+            <div id="trash-modal" class="custom-modal">
                 <div class="modal-content" style="max-width: 400px;">
                     <div class="modal-header">مامەڵە سڕاوەکان</div>
                     <div class="modal-sub">بۆ ماوەی ٣٠ ڕۆژ لەم بەشەدا دەمێننەوە</div>
@@ -239,7 +244,8 @@
         import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyDZNuDC7hPOI6RNCfjcP-nfMN12knaSX0M",authDomain: "my-wallet-49a52.firebaseapp.com",
+            apiKey: "AIzaSyDZNuDC7hPOI6RNCfjcP-nfMN12knaSX0M",
+            authDomain: "my-wallet-49a52.firebaseapp.com",
             projectId: "my-wallet-49a52",
             storageBucket: "my-wallet-49a52.firebasestorage.app",
             messagingSenderId: "765205856247",
@@ -273,9 +279,14 @@
         }
 
         window.registerUser = function() {
-            let email = document.getElementById('reg-email').value;
+            let email = document.getElementById('reg-email').value.trim();
             let pass = document.getElementById('reg-password').value;
             let confirmPass = document.getElementById('reg-password-confirm').value;
+
+            if (!email || !pass) {
+                showCustomAlert('تێبینی', 'تکایە خانەکان بە دروستی پڕبکەرەوە!');
+                return;
+            }
 
             if (pass !== confirmPass) {
                 showCustomAlert('هەڵە', 'پاسۆردەکان یەکناگرنەوە!');
@@ -289,14 +300,47 @@
                         showCustomAlert('سەرکەوتوو', 'ئەکاونتەکەت بە سەرکەوتوویی دروست بوو!');
                     });
                 })
-                .catch((error) => { showCustomAlert('هەڵە', error.message); });
+                .catch((error) => {
+                    let msg = error.message;
+                    if (error.code === 'auth/email-already-in-use') {
+                        msg = 'ئەم ئیمەیڵە پێشتر بەکارهاتووە بۆ ئەکاونتێکی تر!';
+                    } else if (error.code === 'auth/invalid-email') {
+                        msg = 'شێوازی ئیمەیڵەکە هەڵەیە!';
+                    } else if (error.code === 'auth/weak-password') {
+                        msg = 'پاسۆرد دەبێت لانیکەم ٦ پیت یان ژمارە بێت!';
+                    }
+                    showCustomAlert('هەڵە', msg);
+                });
         }
 
-        window.loginUser = function() {
-            let email = document.getElementById('login-email').value;
+        // چارەسەری ڕاستەقینە بۆ چوونە ژوورەوە بە پشتبەستن بە کۆدی هەڵەی فایەربەیس
+        window.loginUser = async function() {
+            let email = document.getElementById('login-email').value.trim();
             let pass = document.getElementById('login-password').value;
-            signInWithEmailAndPassword(auth, email, pass)
-                .catch((error) => { showCustomAlert('هەڵە', error.message); });
+            
+            if (!email || !pass) {
+                showCustomAlert('تێبینی', 'تکایە ئیمەیڵ و پاسۆرد بنووسە!');
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                let errorCode = error.code;
+                let errorMsg = 'هەڵەیەک ڕویدا، دڵنیابە لە زانیارییەکانت.';
+
+                if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
+                    // فایەربەیس لە ڤێرشنە نوێیەکاندا هەردوو حاڵەتی (ئیمەیڵی هەڵە یان پاسۆردی هەڵە) تێکەڵ دەکات بە auth/invalid-credential
+                    // بۆیە ڕاستەوخۆ دەڵێین یان ئیمەیڵەکە بوونی نییە یان پاسۆردەکەی هەڵەیە
+                    errorMsg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە، یان پاسۆردەکەت هەڵەیە.';
+                } else if (errorCode === 'auth/invalid-email') {
+                    errorMsg = 'شێوازی ئیمەیڵەکە هەڵەیە.';
+                } else if (errorCode === 'auth/too-many-requests') {
+                    errorMsg = 'چەندین جار هەڵە تاقیکراوەتەوە، تکایە کەمێک پشوو بدە و دووبارە هەوڵ بدەرەوە.';
+                }
+
+                showCustomAlert('ئاگاداری', errorMsg);
+            }
         }
 
         window.logoutUser = function() {
@@ -306,18 +350,30 @@
             signOut(auth);
         }
 
-        window.sendResetEmail = function() {
-            let email = document.getElementById('forgot-email').value;
+        // چارەسەری ناردنی ئیمەیڵی گۆڕینەوەی پاسۆرد
+        window.sendResetEmail = async function() {
+            let email = document.getElementById('forgot-email').value.trim();
             if (!email) {
                 showCustomAlert('تێبینی', 'تکایە ئیمەیڵەکەت بنووسە!');
                 return;
             }
-            sendPasswordResetEmail(auth, email)
-                .then(() => {
-                    showCustomAlert('سەرکەوتوو', 'لینکی گۆڕینەوەی پاسۆرد نێردرا بۆ ئیمەیڵەکەت.');
-                    showBox('login-box');
-                })
-                .catch((error) => { showCustomAlert('هەڵە', error.message); });
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showCustomAlert('سەرکەوتوو', 'ڤێریفای چووەتەوە بۆ ئیمەیڵ لەبەشی spam تکایە بیپشکنە');
+                showBox('login-box');
+            } catch (error) {
+                let msg = 'هەڵەیەک ڕویدا.';
+                if (error.code === 'auth/user-not-found') {
+                    msg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە.';
+                } else if (error.code === 'auth/invalid-email') {
+                    msg = 'شێوازی ئیمەیڵەکە هەڵەیە.';
+                } else {
+                    // بۆ ئەوەی دڵنیابین ئەگەر فایەربەیس باسی نەبوونی ئیمەیڵیش نەکرد، پەیامی سپام بنێرین یان پەیامی دروستکردنی ئەکاونت
+                    msg = 'هیچ ئەکاونتێک بوونی نییە لەسەر ئەم ئیمەیڵە تکایە دروستی بکە (یان ئیمەیڵەکەت بپشکنە).';
+                }
+                showCustomAlert('ئاگاداری', msg);
+            }
         }
 
         window.toggleMenu = function() {
@@ -331,7 +387,8 @@
         window.showCustomAlert = function(title, message) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-subtitle').innerText = '';
-            document.getElementById('modal-body-content').innerHTML = <div style="text-align: center; font-size: 14px; color: #f8fafc; padding: 10px;">${message}</div>;document.getElementById('modal-cancel-btn').style.display = 'none';
+            document.getElementById('modal-body-content').innerHTML = `<div style="text-align: center; font-size: 14px; color: #f8fafc; padding: 10px;">${message}</div>`;
+            document.getElementById('modal-cancel-btn').style.display = 'none';
             let okBtn = document.getElementById('modal-ok-btn');
             okBtn.innerText = 'باشە';
             okBtn.onclick = closeCustomModal;
@@ -351,7 +408,7 @@
             if (type === 'name') {
                 title.innerText = 'گۆڕینی ناوی هەژمار';
                 sub.innerText = 'ناوی نوێی خۆت بنووسە';
-                body.innerHTML = <input type="text" id="modal-input-field" placeholder="ناوی نوێ...">;
+                body.innerHTML = `<input type="text" id="modal-input-field" placeholder="ناوی نوێ...">`;
                 okBtn.innerText = 'گۆڕین';
                 okBtn.onclick = function() {
                     let val = document.getElementById('modal-input-field').value;
@@ -366,10 +423,10 @@
             } else if (type === 'email') {
                 title.innerText = 'گۆڕینی ئیمەیڵ';
                 sub.innerText = 'ئیمەیڵی نوێ وە پاسۆردەکەت بنووسە';
-                body.innerHTML = 
+                body.innerHTML = `
                     <div style="margin-bottom: 10px;"><input type="email" id="modal-input-email" placeholder="ئیمەیڵی نوێ..."></div>
                     <div><input type="password" id="modal-input-pass" placeholder="پاسۆردی هەژمار..."></div>
-                ;
+                `;
                 okBtn.innerText = 'ناردن';
                 okBtn.onclick = function() {
                     let newEmail = document.getElementById('modal-input-email').value;
@@ -380,7 +437,7 @@
                         reauthenticateWithCredential(user, cred).then(() => {
                             verifyBeforeUpdateEmail(user, newEmail).then(() => {
                                 closeCustomModal();
-                                showCustomAlert('سەرکەوتوو', 'لینکێکی ڤێریفای نێردرا بۆ ئیمەیڵە نوێیەکەت.');
+                                showCustomAlert('سەرکەوتوو', 'ڤێریفای چووەتەوە بۆ ئیمەیڵ لەبەشی spam تکایە بیپشکنە');
                             }).catch(err => showCustomAlert('هەڵە', err.message));
                         }).catch(() => {
                             showCustomAlert('هەڵە', 'پاسۆردی هەژمار هەڵەیە!');
@@ -390,11 +447,12 @@
             } else if (type === 'delete') {
                 title.innerText = 'سڕینەوەی هەژمار';
                 sub.innerText = 'بۆ دلنیابوونەوە پاسۆردەکەت بنووسە';
-                body.innerHTML = <input type="password" id="modal-input-field" placeholder="پاسۆردی هەژمار">;
+                body.innerHTML = `<input type="password" id="modal-input-field" placeholder="پاسۆردی هەژمار">`;
                 okBtn.innerText = 'سڕینەوەی یەکجاری';
                 okBtn.onclick = async function() {
                     let pass = document.getElementById('modal-input-field').value;
-                    if (pass && auth.currentUser) {let user = auth.currentUser;
+                    if (pass && auth.currentUser) {
+                        let user = auth.currentUser;
                         let uid = user.uid;
                         let cred = EmailAuthProvider.credential(user.email, pass);
                         try {
@@ -424,7 +482,7 @@
 
             title.innerText = 'زیادکردنی جۆر';
             sub.innerText = 'ناوی جۆری نوێی خەرجی بنووسە';
-            body.innerHTML = <input type="text" id="modal-input-field" placeholder="ناوی جۆر...">;
+            body.innerHTML = `<input type="text" id="modal-input-field" placeholder="ناوی جۆر...">`;
             okBtn.innerText = 'زیادکردن';
             okBtn.onclick = function() {
                 let newCat = document.getElementById('modal-input-field').value.trim();
@@ -481,7 +539,8 @@
             } else {
                 window.trashArray.forEach(item => {
                     trashBody.innerHTML += `
-                        <div class="trash-row"><div>
+                        <div class="trash-row">
+                            <div>
                                 <b>${item.title}</b>: -${window.formatNumber(item.amount)}<br>
                                 <span style="color: #94a3b8; font-size: 10px;">${item.dateTime}</span>
                             </div>
@@ -565,7 +624,9 @@
             signOut(auth).then(() => {
                 showBox('login-box');
             });
-        }window.initCategories = function() {
+        }
+
+        window.initCategories = function() {
             let list = document.getElementById('custom-dropdown-list');
             let headerText = document.getElementById('selected-category-text');
             if(!list) return;
@@ -576,19 +637,19 @@
             }
             
             if(window.categories.length > 0) {
-                headerText.innerHTML = ${window.selectedCategory} <span>▼</span>;
+                headerText.innerHTML = `${window.selectedCategory} <span>▼</span>`;
             } else {
-                headerText.innerHTML = هیچ جۆرێک نییە <span>▼</span>;
+                headerText.innerHTML = `هیچ جۆرێک نییە <span>▼</span>`;
             }
 
             window.categories.forEach(cat => {
                 let option = document.createElement('div');
                 option.className = 'custom-option';
-                option.innerHTML = <span>${cat}</span> <span class="option-delete" onclick="deleteCategory(event, '${cat}')">&times;</span>;
+                option.innerHTML = `<span>${cat}</span> <span class="option-delete" onclick="deleteCategory(event, '${cat}')">&times;</span>`;
                 option.onclick = (e) => {
                     if(e.target.classList.contains('option-delete')) return;
                     window.selectedCategory = cat;
-                    headerText.innerHTML = ${cat} <span>▼</span>;
+                    headerText.innerHTML = `${cat} <span>▼</span>`;
                     list.classList.remove('active');
                     saveUserDataToCloud();
                 };
@@ -642,11 +703,13 @@
 
             if (title && !isNaN(amount) && amount > 0 && window.categories.length > 0) {
                 let now = new Date();
-                let fullDateTime = ${now.toLocaleDateString('en-GB')} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })};
+                let fullDateTime = `${now.toLocaleDateString('en-GB')} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
 
                 window.expensesArray.push({ id: Date.now(), category: window.selectedCategory, title, amount, dateTime: fullDateTime });
                 saveUserDataToCloud();
-                renderAll();document.getElementById('expense-title').value = '';
+                renderAll();
+
+                document.getElementById('expense-title').value = '';
                 document.getElementById('expense-amount').value = '';
             } else {
                 showCustomAlert('هەڵە', 'تکایە خانەکان بە دروستی پڕبکەرەوە یان جۆری خەرجی هەڵبژێرە!');
@@ -677,7 +740,7 @@
 
             let listHTML = '';
             window.expensesArray.forEach(item => {
-                listHTML += 
+                listHTML += `
                     <li class="history-item">
                         <div class="item-info">
                             <h4>${item.title} (${item.category})</h4>
@@ -688,7 +751,7 @@
                             <button class="btn-danger" onclick="deleteExpense(${item.id})">سڕینەوە</button>
                         </div>
                     </li>
-                ;
+                `;
             });
             document.getElementById('expense-list').innerHTML = listHTML;
         }
